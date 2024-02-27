@@ -1,0 +1,2 @@
+# bitbox
+Behavioral Imaging Toolbox
