@@ -4,6 +4,9 @@ setup(
     name='bitbox',
     version='0.1',
     packages=find_packages(),
+    install_requires=[
+        # List of required packages
+    ],
     description='Behavioral Imaging Toolbox',
     author='Birkan Tunc',
     author_email='tuncb@chop.edu',
