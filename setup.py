@@ -1,19 +1,26 @@
 from setuptools import setup, find_packages
 
+with open('README.md', 'r') as f:
+    long_description = f.read()
+
 setup(
-    name='bitbox',
-    version='0.1',
-    packages=find_packages(),
-    install_requires=[
-        # List of required packages
-    ],
-    description='Behavioral Imaging Toolbox',
-    author='Birkan Tunc',
-    author_email='tuncb@chop.edu',
-    license='MIT',
-    classifiers=[
-        'License :: OSI Approved :: MIT License',
+    name = 'bitbox',
+    version = '0.1',
+    description = 'Behavioral Imaging Toolbox',
+    author = 'ComPsy Group'
+    author_email = 'tuncb@chop.edu',
+    long_description = long_description,
+    long_description_content_type = 'text/markdown',
+    url = 'https://github.com/Computational-Psychiatry/bitbox',
+    license = 'GPL-3.0',
+    classifiers = [
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
     ],
+    packages = find_packages(),
+    python_requires = '>=3.6',
+    install_requires = [
+        # List of required packages
+    ]
 )
