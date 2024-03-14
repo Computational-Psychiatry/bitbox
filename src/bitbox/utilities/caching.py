@@ -26,7 +26,7 @@ class FileCache:
         # 1: file does not exist, create a new file
         # 2: file does not exist, create a new file with a new name
         
-        # TODO: check if the file is a valid file
+        # @TODO: check if the file is a valid file
         
         if json_required is None:
             json_required = self.json_required

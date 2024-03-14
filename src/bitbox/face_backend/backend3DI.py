@@ -50,7 +50,7 @@ class FaceProcessor3DI:
             raise ValueError("3DI package is not found. Please make sure you defined PATH_3DI system variable.")
         
         # set the working directory
-        # TODO: remove this line when the 3DI code is updated by Vangelis
+        # @TODO: remove this line when the 3DI code is updated by Vangelis
         os.chdir(self.execDIR)
         
         # prepare configuration files
@@ -110,15 +110,15 @@ class FaceProcessor3DI:
         # run the executable if needed
         if file_exits > 0: # file does not exist, has different metadata, or it is older than the retention period
             # if needed, change the name of the output file
-            # TODO: when we change the file name, next time we run the code, we should be using the latest file generated, which is hard to track. We are rewriting for now.
-            # TODO: for the same reason above, we need to remove the old metadata file otherwise "file_generated" will be >0 and fail the check
-            # TODO: also we need to consider multiple output files
+            # @TODO: when we change the file name, next time we run the code, we should be using the latest file generated, which is hard to track. We are rewriting for now.
+            # @TODO: for the same reason above, we need to remove the old metadata file otherwise "file_generated" will be >0 and fail the check
+            # @TODO: also we need to consider multiple output files
             if file_exits == 2:
-                # delete this loop after resolving above TODO
+                # delete this loop after resolving above @TODO
                 for idx in output_file_idx:
                     self.cache.delete_old_file(parameters[idx])
-                #output_file = self.cache.get_new_file_name(output_file)  # uncomment after resolving above TODO
-                #parameters[output_file_idx] = output_file  # uncomment after resolving above TODO
+                #output_file = self.cache.get_new_file_name(output_file)  # uncomment after resolving above @TODO
+                #parameters[output_file_idx] = output_file  # uncomment after resolving above @TODO
             
             # run the command
             print("Running %s..." % name, end='')
@@ -217,7 +217,7 @@ class FaceProcessor3DI:
         # run undistortion if needed
         if undistort==True:
             # check if proper camera parameters are provided
-            # TODO: check if self.model_camera is a valid file and includes undistortion parameters
+            # @TODO: check if self.model_camera is a valid file and includes undistortion parameters
             
             self._execute('video_undistort',
                                    [self.file_input, self.model_camera, self.file_input_prep],
