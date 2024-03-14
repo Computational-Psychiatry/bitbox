@@ -1,3 +1,8 @@
+#3DI outputs
+*.3DI
+*.3DI.gz
+*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

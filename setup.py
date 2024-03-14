@@ -7,7 +7,7 @@ setup(
     name = 'bitbox',
     version = '2024.03dev1',
     description = 'Behavioral Imaging Toolbox',
-    author = 'ComPsy Group'
+    author = 'ComPsy Group',
     author_email = 'tuncb@chop.edu',
     long_description = long_description,
     long_description_content_type = 'text/markdown',
@@ -18,9 +18,12 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
     ],
-    packages = find_packages(),
-    python_requires = '>=3.6',
+    packages=find_packages("src"),
+    package_dir={"": "src"},
+    python_requires = '>=3.8',
     install_requires = [
-        # List of required packages
+        'numpy',
+        'cvxpy',
+        'scikit-learn'
     ]
 )

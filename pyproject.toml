@@ -15,6 +15,11 @@ description = "Behavioral Imaging Toolbox"
 keywords = ["computer vision", "psychology", "psychiatry", "behavior", "facial expressions", "body actions"]
 readme = "README.md"
 requires-python = ">=3.8"
+dependencies = [
+    'numpy',
+    'cvxpy',
+    'scikit-learn'
+]
 classifiers = [
     "Development Status :: 1 - Planning",
     "Intended Audience :: Science/Research",
