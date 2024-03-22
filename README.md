@@ -6,7 +6,7 @@ Please refer to our [Wiki](https://github.com/Computational-Psychiatry/bitbox/wi
 
 ## Installation
 
-Before installing Bitbox, you need to install 3DI. If 3DI is not installed, you will receive an error when trying to use Bitbox. 3DI repository is located at [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI).
+Before installing Bitbox, you need to install 3DI. If 3DI is not installed, you will receive an error when trying to use Bitbox. 3DI repository is located at [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). You will need to use python 3.8 or higher. 
 
 To install Bitbox, follow these steps:
 
