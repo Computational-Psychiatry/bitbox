@@ -1,4 +1,4 @@
-cvxpy
+cvxpy >= 1.4
 numpy
 scikit-learn
 python-dateutil

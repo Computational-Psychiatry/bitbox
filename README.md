@@ -12,10 +12,10 @@ To install Bitbox, follow these steps:
 
 1. Create a virtual environment and activate it:
     ```bash
-    python3 -m venv bitbox
-    source bitbox/bin/activate
+    python3 -m venv env
+    source env/bin/activate
     ```
-    Note that this will create a virtual environment named "bitbox" in the current directory. You can use any name, and you can install the virtual environment anywhere you like. Just don't forget where you installed it. For the following steps, we will assume you have activated the virtual environment.
+    Note that this will create a virtual environment named `env` in the current directory. You can use any name, and you can install the virtual environment anywhere you like. Just don't forget where you installed it. For the following steps, we will assume you have activated the virtual environment.
 
 2. Clone the Bitbox repository:
     ```bash
