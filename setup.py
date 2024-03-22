@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setup(
     name = 'bitbox',
-    version = '2024.03dev1',
+    version = '2024.03dev2',
     description = 'Behavioral Imaging Toolbox',
     author = 'ComPsy Group',
     author_email = 'tuncb@chop.edu',
@@ -22,8 +22,9 @@ setup(
     package_dir={"": "src"},
     python_requires = '>=3.8',
     install_requires = [
-        'numpy',
         'cvxpy',
-        'scikit-learn'
+        'numpy',
+        'scikit-learn',
+        'python-dateutil'
     ]
 )

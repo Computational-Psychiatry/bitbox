@@ -10,22 +10,35 @@ Before installing Bitbox, you need to install 3DI. If 3DI is not installed, you 
 
 To install Bitbox, follow these steps:
 
-1. Clone the Bitbox repository:
+1. Create a virtual environment and activate it:
+    ```bash
+    python3 -m venv bitbox
+    source bitbox/bin/activate
+    ```
+    Note that this will create a virtual environment named "bitbox" in the current directory. You can use any name, and you can install the virtual environment anywhere you like. Just don't forget where you installed it. For the following steps, we will assume you have activated the virtual environment.
+
+2. Clone the Bitbox repository:
     ```bash
     git clone https://github.com/Computational-Psychiatry/bitbox.git
     ```
 
-2. Change to the Bitbox directory:
+3. Change to the Bitbox directory:
     ```bash
     cd bitbox
     ```
 
-3. Install Bitbox using `python setup.py install`:
+4. Install requirements:
+    ```bash
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    ```
+
+5. Install Bitbox using `python setup.py install`:
     ```bash
     python setup.py install
     ```
 
-4. Set the environment variable `PATH_3DI` to indicate the directory in which 3DI was installed:
+6. Set the environment variable `PATH_3DI` to indicate the directory in which 3DI was installed:
 
     - **Linux**:
       ```bash

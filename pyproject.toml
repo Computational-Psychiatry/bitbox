@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bitbox"
-version = "2024.03dev1"
+version = "2024.03dev2"
 authors = [
   { name="ComPsy Group", email="tuncb@chop.edu" },
 ]
@@ -16,9 +16,10 @@ keywords = ["computer vision", "psychology", "psychiatry", "behavior", "facial e
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-    'numpy',
     'cvxpy',
-    'scikit-learn'
+    'numpy',
+    'scikit-learn',
+    'python-dateutil'
 ]
 classifiers = [
     "Development Status :: 1 - Planning",

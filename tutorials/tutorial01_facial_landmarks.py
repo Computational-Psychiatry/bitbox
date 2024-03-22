@@ -1,6 +1,7 @@
 from bitbox.face_backend import FaceProcessor3DI
 
-DIR = './'
+# Please make sure you give the correct full (not relative) path
+DIR = '/home/tuncb/Works/code/compsy/bitbox/tutorials/'
 input_file = DIR + 'data/elaine.mp4'
 output_dir = DIR + 'output/'
 

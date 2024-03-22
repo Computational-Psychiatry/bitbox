@@ -86,6 +86,28 @@ class FaceProcessor3DI:
         compute_localized_expressions(self.execDIR, land_path, exp_path, self.model_morphable)
     
     
+    def _run_command(self, executable, parameters, output_file_idx, system_call):        
+        if system_call: # if we are using system call
+            # prepare the command
+            cmd = self.execDIR + executable
+            for p in parameters:
+                if p is None:
+                    raise ValueError("File names are not set correctly. Please use io() method prior to running any processing.")
+                cmd += ' ' + str(p)
+            # suppress the output of the command. check whether we are on a Windows or Unix-like system
+            if os.name == 'nt': # Windows
+                cmd += ' > NUL'
+            else: # Unix-like systems (Linux, macOS)
+                cmd += ' > /dev/null'            
+            os.system(cmd)
+        else: # if we are using a python function
+            cmd = "%s()" % executable
+            # prepare the function
+            func = getattr(self, executable)
+            func(*parameters)
+            
+        return cmd
+    
     def _execute(self, executable, parameters, name, output_file_idx=-1, system_call=True):
         status = False
         
@@ -123,26 +145,7 @@ class FaceProcessor3DI:
             # run the command
             print("Running %s..." % name, end='')
             t0 = time()
-            
-            if system_call: # if we are using system call
-                # prepare the command
-                cmd = self.execDIR + executable
-                for p in parameters:
-                    if p is None:
-                        raise ValueError("File names are not set correctly. Please use io() method prior to running any processing.")
-                    cmd += ' ' + str(p)
-                # suppress the output of the command. check whether we are on a Windows or Unix-like system
-                if os.name == 'nt': # Windows
-                    cmd += ' > NUL'
-                else: # Unix-like systems (Linux, macOS)
-                    cmd += ' > /dev/null'            
-                os.system(cmd)
-            else: # if we are using a python function
-                cmd = "%s()" % executable
-                # prepare the function
-                func = getattr(self, executable)
-                func(*parameters)
-            
+            cmd = self._run_command(executable, parameters, output_file_idx, system_call)
             print(" (Took %.2f secs)" % (time()-t0))
             
             # check if face detection was successful
@@ -213,7 +216,7 @@ class FaceProcessor3DI:
         self.file_expression_localized = self.dir_output + self.file_input_base + '_expression_localized.3DI' # localized expressions
                
         
-    def preprocess(self, undistort=True):
+    def preprocess(self, undistort=False):
         # run undistortion if needed
         if undistort==True:
             # check if proper camera parameters are provided
@@ -310,12 +313,63 @@ class FaceProcessor3DI:
                     output_file_idx=-1,
                     system_call=False)
         
-        return np.loadtxt(self.file_expression_localized)
+        return read_expression(self.file_expression_localized)
 
 
     def run_all(self, undistort=False):
-        self._check_configuration()
-        return 0, 0, 0, 0
+        self.preprocess(undistort)
+        rect = self.detect_faces()
+        land = self.detect_landmarks()
+        exp_glob, pose, land_can = self.fit()
+        exp_loc = self.localized_expressions()
+        
+        return rect, land, exp_glob, pose, land_can, exp_loc
+    
+    
+class FaceProcessor3DITest(FaceProcessor3DI):
+    def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_dict=True):
+        self.file_input = None
+        self.dir_output = None
+        self.execDIR = None
+        self.base_metadata = None
+        
+        self.model_camera = camera_model
+        self.model_morphable = morphable_model
+        self.model_landmark = landmark_model
+        self.fast = fast
+        
+        self.cache = FileCache()
+        
+        self.return_dict = return_dict
+        
+        self.execDIR = './'
+        
+        # prepare configuration files
+        if self.fast:
+            cfgid = 2
+        else:
+            cfgid = 1
+        
+        self.config_landmarks = self.execDIR + 'configs/%s.cfg%d.%s.txt' % (self.model_morphable, cfgid, self.model_landmark)
+        
+        
+    def _run_command(self, executable, parameters, output_file_idx, system_call):        
+        for idx in output_file_idx:
+            with open(parameters[idx], 'w') as file:
+                file.write("This is an empty file for testing purposes. Well, it is not literally 'empty' but, you know, it is not what you expect.")
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
