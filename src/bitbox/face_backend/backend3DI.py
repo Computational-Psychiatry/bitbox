@@ -42,8 +42,8 @@ class FaceProcessor3DI:
                 execDIRs = execDIRs.split(':')
                 
         for d in execDIRs:
-            if os.path.exists(d + '/video_learn_identity'):
-                self.execDIR = d + '/'
+            if os.path.exists(os.path.join(d, 'video_learn_identity')):
+                self.execDIR = d
                 break
             
         if self.execDIR is None:
@@ -59,13 +59,13 @@ class FaceProcessor3DI:
         else:
             cfgid = 1
         
-        self.config_landmarks = self.execDIR + 'configs/%s.cfg%d.%s.txt' % (self.model_morphable, cfgid, self.model_landmark)
+        self.config_landmarks = os.path.join(self.execDIR, 'configs/%s.cfg%d.%s.txt' % (self.model_morphable, cfgid, self.model_landmark))
     
     
     def _shape_and_texture(self, shp_path, tex_path):
         alpha = np.loadtxt(self.file_shape_coeff)
         beta =  0.4*np.loadtxt(self.file_texture_coeff)
-        sdir = self.execDIR + 'models/MMs/%s' % self.model_morphable
+        sdir = os.path.join(self.execDIR, 'models/MMs/%s' % self.model_morphable)
         
         save_shape_and_texture(alpha, beta, sdir, shp_path, tex_path)
     
@@ -86,10 +86,13 @@ class FaceProcessor3DI:
         compute_localized_expressions(self.execDIR, land_path, exp_path, self.model_morphable)
     
     
-    def _run_command(self, executable, parameters, output_file_idx, system_call):        
+    def _run_command(self, executable, parameters, name, output_file_idx, system_call):
+        print("Running %s..." % name, end='')
+        t0 = time()
+                  
         if system_call: # if we are using system call
             # prepare the command
-            cmd = self.execDIR + executable
+            cmd = os.path.join(self.execDIR, executable)
             for p in parameters:
                 if p is None:
                     raise ValueError("File names are not set correctly. Please use io() method prior to running any processing.")
@@ -105,6 +108,8 @@ class FaceProcessor3DI:
             # prepare the function
             func = getattr(self, executable)
             func(*parameters)
+            
+        print(" (Took %.2f secs)" % (time()-t0))
             
         return cmd
     
@@ -143,10 +148,7 @@ class FaceProcessor3DI:
                 #parameters[output_file_idx] = output_file  # uncomment after resolving above @TODO
             
             # run the command
-            print("Running %s..." % name, end='')
-            t0 = time()
-            cmd = self._run_command(executable, parameters, output_file_idx, system_call)
-            print(" (Took %.2f secs)" % (time()-t0))
+            cmd = self._run_command(executable, parameters, name, output_file_idx, system_call)
             
             # check if face detection was successful
             file_generated = 0
@@ -197,23 +199,23 @@ class FaceProcessor3DI:
         # if no exception is raised, set the input file and output directory
         self.file_input = input_file
         self.file_input_base = '.'.join(os.path.basename(input_file).split('.')[:-1])
-        self.dir_output = output_dir + '/'
+        self.dir_output = output_dir
         
         # set all the output files
-        self.file_input_prep = self.dir_output + self.file_input_base + '_preprocessed.' + ext # preprocessed video file
-        self.file_rectangles = self.dir_output + self.file_input_base + '_rects.3DI' # face rectangles
-        self.file_landmarks = self.dir_output + self.file_input_base + '_landmarks.3DI' # landmarks
-        self.file_shape_coeff  = self.dir_output + self.file_input_base + '_shape_coeff.3DI' # shape coefficients
-        self.file_texture_coeff  = self.dir_output + self.file_input_base + '_texture_coeff.3DI' # texture coefficients
-        self.file_shape  = self.dir_output + self.file_input_base + '_shape.3DI' # shape model
-        self.file_texture  = self.dir_output + self.file_input_base + '_texture.3DI' # texture model
-        self.file_expression  = self.dir_output + self.file_input_base + '_expression.3DI' # expression coefficients
-        self.file_pose  = self.dir_output + self.file_input_base + '_pose.3DI' # pose info
-        self.file_illumination  = self.dir_output + self.file_input_base + '_illumination.3DI' # illumination coefficients
-        self.file_expression_smooth = self.dir_output + self.file_input_base + '_expression_smooth.3DI' # smoothed expression coefficients
-        self.file_pose_smooth = self.dir_output + self.file_input_base + '_pose_smooth.3DI' # smoothed pose info
-        self.file_landmarks_cannonicalized = self.dir_output + self.file_input_base + '_landmarks_cannonicalized.3DI' # canonicalized landmarks
-        self.file_expression_localized = self.dir_output + self.file_input_base + '_expression_localized.3DI' # localized expressions
+        self.file_input_prep = os.path.join(self.dir_output, self.file_input_base + '_preprocessed.' + ext) # preprocessed video file
+        self.file_rectangles = os.path.join(self.dir_output, self.file_input_base + '_rects.3DI') # face rectangles
+        self.file_landmarks = os.path.join(self.dir_output, self.file_input_base + '_landmarks.3DI') # landmarks
+        self.file_shape_coeff  = os.path.join(self.dir_output, self.file_input_base + '_shape_coeff.3DI') # shape coefficients
+        self.file_texture_coeff  = os.path.join(self.dir_output, self.file_input_base + '_texture_coeff.3DI') # texture coefficients
+        self.file_shape  = os.path.join(self.dir_output, self.file_input_base + '_shape.3DI') # shape model
+        self.file_texture  = os.path.join(self.dir_output, self.file_input_base + '_texture.3DI') # texture model
+        self.file_expression  = os.path.join(self.dir_output, self.file_input_base + '_expression.3DI') # expression coefficients
+        self.file_pose  = os.path.join(self.dir_output, self.file_input_base + '_pose.3DI') # pose info
+        self.file_illumination  = os.path.join(self.dir_output, self.file_input_base + '_illumination.3DI') # illumination coefficients
+        self.file_expression_smooth = os.path.join(self.dir_output, self.file_input_base + '_expression_smooth.3DI') # smoothed expression coefficients
+        self.file_pose_smooth = os.path.join(self.dir_output, self.file_input_base + '_pose_smooth.3DI') # smoothed pose info
+        self.file_landmarks_cannonicalized = os.path.join(self.dir_output, self.file_input_base + '_landmarks_cannonicalized.3DI') # canonicalized landmarks
+        self.file_expression_localized = os.path.join(self.dir_output, self.file_input_base + '_expression_localized.3DI') # localized expressions
                
         
     def preprocess(self, undistort=False):
@@ -350,7 +352,7 @@ class FaceProcessor3DITest(FaceProcessor3DI):
         else:
             cfgid = 1
         
-        self.config_landmarks = self.execDIR + 'configs/%s.cfg%d.%s.txt' % (self.model_morphable, cfgid, self.model_landmark)
+        self.config_landmarks = os.path.join(self.execDIR, 'configs/%s.cfg%d.%s.txt' % (self.model_morphable, cfgid, self.model_landmark))
         
         
     def _run_command(self, executable, parameters, output_file_idx, system_call):        

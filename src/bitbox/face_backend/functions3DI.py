@@ -2,6 +2,7 @@ import numpy as np
 import cvxpy as cp
 from sklearn.impute import KNNImputer
 from sklearn.decomposition import DictionaryLearning
+import os
 
 
 def save_shape_and_texture(alpha, beta, sdir, shp_path, tex_path):
@@ -51,7 +52,7 @@ def total_variance_rec(model_path, e0path, epath, morphable_model='BFMmm-19830')
     T = e1.shape[0]
     K = e1.shape[1]
 
-    sdir = model_path + 'models/MMs/%s' % morphable_model 
+    sdir = os.path.join(model_path, 'models/MMs/%s' % morphable_model)
     EX  = np.loadtxt('%s/E/EX_79.dat' % sdir)[li,:]
     EY  = np.loadtxt('%s/E/EY_79.dat' % sdir)[li,:]
     EZ  = np.loadtxt('%s/E/EZ_79.dat' % sdir)[li,:]
@@ -185,7 +186,7 @@ def total_variance_rec_pose(ppath, pnewpath):
     
 
 def compute_canonicalized_landmarks(model_path, epath, lpath, morphable_model='BFMmm-19830'):
-    sdir = model_path + 'models/MMs/%s' % morphable_model
+    sdir = os.path.join(model_path, 'models/MMs/%s' % morphable_model)
     
     li = [17286,17577,17765,17885,18012,18542,18668,18788,18987,19236,7882,7896,7905,7911,6479,7323,
         7922,8523,9362,1586,3480,4770,5807,4266,3236, 10176,11203,12364,14269,12636,11602,5243,5875,
@@ -230,8 +231,8 @@ def compute_canonicalized_landmarks(model_path, epath, lpath, morphable_model='B
 def compute_localized_expressions(model_path, canonical_lmks_file, local_exp_coeffs_file, morphable_model='BFMmm-19830'):
     basis_version = '0.0.1.4'
     
-    sdir = model_path + f'models/MMs/{morphable_model}/'
-    localized_basis_file = f'models/MMs/{morphable_model}/E/localized_basis/v.{basis_version}.npy'
+    sdir = os.path.join(model_path, f'models/MMs/{morphable_model}/')
+    localized_basis_file = os.path.join(model_path, f'models/MMs/{morphable_model}/E/localized_basis/v.{basis_version}.npy')
     basis_set = np.load(localized_basis_file, allow_pickle=True).item()
 
     P = np.loadtxt(canonical_lmks_file)
