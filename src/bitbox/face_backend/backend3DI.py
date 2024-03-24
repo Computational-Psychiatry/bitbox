@@ -15,7 +15,7 @@ from .reader3DI import read_rectangles, read_landmarks
 from .reader3DI import read_pose, read_expression, read_canonical_landmarks
 
 class FaceProcessor3DI:
-    def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_dict=True):
+    def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_output=True):
         self.file_input = None
         self.dir_output = None
         self.execDIR = None
@@ -28,7 +28,7 @@ class FaceProcessor3DI:
         
         self.cache = FileCache()
         
-        self.return_dict = return_dict
+        self.return_output = return_output
         
         # find out where 3DI package is installed
         if os.environ.get('PATH_3DI'):
@@ -86,10 +86,7 @@ class FaceProcessor3DI:
         compute_localized_expressions(self.execDIR, land_path, exp_path, self.model_morphable)
     
     
-    def _run_command(self, executable, parameters, name, output_file_idx, system_call):
-        print("Running %s..." % name, end='')
-        t0 = time()
-                  
+    def _run_command(self, executable, parameters, output_file_idx, system_call):                  
         if system_call: # if we are using system call
             # prepare the command
             cmd = os.path.join(self.execDIR, executable)
@@ -108,8 +105,6 @@ class FaceProcessor3DI:
             # prepare the function
             func = getattr(self, executable)
             func(*parameters)
-            
-        print(" (Took %.2f secs)" % (time()-t0))
             
         return cmd
     
@@ -148,7 +143,10 @@ class FaceProcessor3DI:
                 #parameters[output_file_idx] = output_file  # uncomment after resolving above @TODO
             
             # run the command
-            cmd = self._run_command(executable, parameters, name, output_file_idx, system_call)
+            print("Running %s..." % name, end='', flush=True)
+            t0 = time()
+            cmd = self._run_command(executable, parameters, output_file_idx, system_call)
+            print(" (Took %.2f secs)" % (time()-t0))
             
             # check if face detection was successful
             file_generated = 0
@@ -238,8 +236,10 @@ class FaceProcessor3DI:
                       "face detection",
                       output_file_idx=-1)
                
-        if self.return_dict:
+        if self.return_output:
             return read_rectangles(self.file_rectangles)
+        else:
+            return None
             
             
     def detect_landmarks(self):
@@ -252,8 +252,10 @@ class FaceProcessor3DI:
                       "landmark detection",
                       output_file_idx=-2)
         
-        if self.return_dict:
+        if self.return_output:
             return read_landmarks(self.file_landmarks)
+        else:
+            return None
         
 
     def fit(self):
@@ -300,8 +302,10 @@ class FaceProcessor3DI:
                     output_file_idx=-1,
                     system_call=False)
         
-        if self.return_dict:
+        if self.return_output:
             return read_expression(self.file_expression_smooth), read_pose(self.file_pose_smooth), read_canonical_landmarks(self.file_landmarks_cannonicalized)
+        else:
+            return None, None, None
         
 
     def localized_expressions(self):
@@ -315,7 +319,10 @@ class FaceProcessor3DI:
                     output_file_idx=-1,
                     system_call=False)
         
-        return read_expression(self.file_expression_localized)
+        if self.return_output:
+            return read_expression(self.file_expression_localized)
+        else:
+            return None
 
 
     def run_all(self, undistort=False):
@@ -325,11 +332,14 @@ class FaceProcessor3DI:
         exp_glob, pose, land_can = self.fit()
         exp_loc = self.localized_expressions()
         
-        return rect, land, exp_glob, pose, land_can, exp_loc
+        if self.return_output:
+            return rect, land, exp_glob, pose, land_can, exp_loc
+        else:
+            return None, None, None, None, None, None
     
     
 class FaceProcessor3DITest(FaceProcessor3DI):
-    def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_dict=True):
+    def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_output=False):
         self.file_input = None
         self.dir_output = None
         self.execDIR = None
@@ -342,7 +352,7 @@ class FaceProcessor3DITest(FaceProcessor3DI):
         
         self.cache = FileCache()
         
-        self.return_dict = return_dict
+        self.return_output = False
         
         self.execDIR = './'
         
