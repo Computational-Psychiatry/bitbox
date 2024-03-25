@@ -48,7 +48,6 @@ def read_pose(file):
             #first three are translation ignore middle three last three are angles
             values = [value for value in line.split(' ')]
             values = values[0:3] + values[6:]
-            values.pop()
             result[f'frame{frame_count}'] = values
             frame_count += 1
 
