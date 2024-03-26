@@ -1,7 +1,13 @@
-#3DI outputs
+# 3DI outputs
 *.3DI
 *.3DI.gz
 *.json
+
+# Sample data
+*birkan*
+*Birkan*
+output/
+output/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
