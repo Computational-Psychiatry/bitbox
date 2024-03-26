@@ -3,8 +3,7 @@ def read_rectangles(file):
         frame_count = 0
         result = {}
         for line in f:
-            values = [value for value in line.split(' ')]
-            values.pop()
+            values = list(map(lambda value: value.strip(), line.split()))
             result[f'frame{frame_count}'] = [int(value) for value in values]
             frame_count += 1
 
@@ -22,8 +21,7 @@ def read_landmarks(file):
         frame_count = 0
         result = {}
         for line in f:
-            values = [value for value in line.split(' ')]
-            values.pop()
+            values = list(map(lambda value: value.strip(), line.split()))
             result[f'frame{frame_count}']={}
             i = 0
             while i < len(values):
@@ -46,7 +44,8 @@ def read_pose(file):
         result = {}
         for line in f:
             #first three are translation ignore middle three last three are angles
-            values = [value for value in line.split(' ')]
+            #values = [value for value in line.split(' ')]
+            values = list(map(lambda value: value.strip(), line.split()))
             values = values[0:3] + values[6:]
             result[f'frame{frame_count}'] = values
             frame_count += 1
@@ -65,8 +64,7 @@ def read_expression(file):
         frame_count = 0
         result = {}
         for line in f:
-            values = [value for value in line.split(' ')]
-            values.pop()
+            values = list(map(lambda value: value.strip(), line.split()))
             result[f'frame{frame_count}']=values
             frame_count += 1
 
@@ -84,8 +82,7 @@ def read_canonical_landmarks(file):
         frame_count = 0
         result = {}
         for line in f:
-            values = [value for value in line.split(' ')]
-            values[-1] = values[-1].replace('\n','')
+            values = list(map(lambda value: value.strip(), line.split()))
             result[f'frame{frame_count}']={}
             i = 0
             while i < len(values):
