@@ -16,6 +16,7 @@ keywords = ["computer vision", "psychology", "psychiatry", "behavior", "facial e
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
+    'scipy',
     'cvxpy',
     'numpy',
     'scikit-learn',

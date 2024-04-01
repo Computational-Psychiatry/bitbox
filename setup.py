@@ -22,6 +22,7 @@ setup(
     package_dir={"": "src"},
     python_requires = '>=3.8',
     install_requires = [
+        'scipy',
         'cvxpy',
         'numpy',
         'scikit-learn',
