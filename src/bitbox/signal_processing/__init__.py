@@ -1,0 +1,1 @@
+from .wavelets import peak_detection

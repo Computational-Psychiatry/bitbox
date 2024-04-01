@@ -25,6 +25,8 @@ setup(
         'cvxpy',
         'numpy',
         'scikit-learn',
-        'python-dateutil'
+        'python-dateutil',
+        'PyWavelets',
+        'matplotlib'
     ]
 )

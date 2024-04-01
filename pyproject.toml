@@ -19,7 +19,9 @@ dependencies = [
     'cvxpy',
     'numpy',
     'scikit-learn',
-    'python-dateutil'
+    'python-dateutil',
+    'PyWavelets',
+    'matplotlib'
 ]
 classifiers = [
     "Development Status :: 1 - Planning",
