@@ -1,4 +1,4 @@
-from .signal_processing import windowed_cross_correlation
+from .signal_processing import  windowed_cross_correlation, windowed_cross_correlation2
 from .utilities import dictionary_to_array
 
 import numpy as np
@@ -20,6 +20,8 @@ def intra_person_coordination(data, axis=0, width=90, lag=None, step=None, ordin
     # for each pair of signals
     for i in range(num_signals-1):
         for j in range(i+1, num_signals):
+            print(i, j)
+            
             x = data[:,i]
             y = data[:,j]
             
@@ -31,6 +33,33 @@ def intra_person_coordination(data, axis=0, width=90, lag=None, step=None, ordin
             corr_std[i,j] = corr_std[j,i] = np.std(corrs)
             
     return corr_mean, corr_std
+
+def intra_person_coordination2(data, axis=0, width=3, lag=None, step=None, ordinal=False):
+    # check if data is a dictionary
+    if isinstance(data, dict):
+        data = dictionary_to_array(data)
+    
+    # whether rows are time points (axis=0) or signals (axis=1)
+    if axis == 1:
+        data = data.T
+        
+    num_signals = data.shape[1]
+    
+    corr_mean = np.zeros((num_signals, num_signals))
+    corr_std = np.zeros((num_signals, num_signals))
+    corr_lag = np.zeros((num_signals, num_signals))
+    
+    corrs, lags = windowed_cross_correlation2(data, data, width=width, lag=lag, step=step, ordinal=ordinal)
+    
+    pairs = [(i1, i2) for i1 in range(num_signals) for i2 in range(num_signals)]
+    
+    for idx in range(corrs.shape[1]):
+        i, j = pairs[idx]
+        corr_mean[i,j] = corrs[:,idx].mean()
+        corr_std[i,j] = corrs[:,idx].std()
+        corr_lag[i,j] = lags[:,idx].mean()
+            
+    return corr_mean, corr_lag, corr_std
 
 
             

@@ -46,7 +46,7 @@ def _wavelet_decomposition(signal, scales):
     cwtmatr, freqs = pywt.cwt(signal, scales, 'mexh')
     
     # smooth coefficients
-    cwtmatr = gaussian_filter(cwtmatr, sigma=1, axes=(1))
+    cwtmatr = np.array([gaussian_filter(cwtmatr[s, :], sigma=1) for s in range(cwtmatr.shape[0])])
        
     return cwtmatr
 

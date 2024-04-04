@@ -79,3 +79,56 @@ def windowed_cross_correlation(x, y, width=90, lag=None, step=None, ordinal=Fals
         corrs.append(m)
     
     return np.array(corrs)
+
+
+def windowed_cross_correlation2(X, Y, width=3, lag=None, step=None, fps=30, ordinal=False, negative=0):
+    width_seconds = width
+    width = int(round(fps*width_seconds))
+    
+    if step is None:
+        step = int(width/2.)
+    else:
+        step = int(round(fps*step))
+    
+    if lag is None:
+        lag = int(width/4.)
+    else:
+        lag = int(round(fps*lag))
+    
+    T = min((X.shape[0], Y.shape[0]))
+    
+    pairs = [(i1, i2) for i1 in range(0,X.shape[1]) for i2 in range(0,Y.shape[1])]
+    
+    window_offsets = range(0, T-width, step)
+    Nwindows = len(window_offsets)
+    Xcorr = np.zeros((Nwindows, len(pairs)))
+    Xlag  = np.zeros((Nwindows, len(pairs)))
+    
+    pidx = 0
+    for pidx in range(0, len(pairs)):
+        pair = pairs[pidx]
+        
+        for tidx in range(0, Nwindows):
+            t1 = window_offsets[tidx]
+            t2 = t1
+            
+            x = X[range(t1,t1+width), pair[0]]
+            y = Y[range(t2,t2+width), pair[1]]
+        
+            nx = (x-np.mean(x))/(np.std(x)*len(x)+np.finfo(float).eps)
+            ny = (y-np.mean(y))/(np.std(y)+np.finfo(float).eps)
+        
+            corr = np.correlate(nx, ny, 'full')
+        
+            zero_out_frames = round((width - lag))
+            corr[0:zero_out_frames] = -1
+            corr[0:round(len(corr)/2.0)] = -1
+            corr[-zero_out_frames:] = -1
+                                
+            maxcorr = np.max(corr)
+            maxlag = np.argmax(corr) - round(width / 2)
+        
+            Xcorr[tidx, pidx] = maxcorr
+            Xlag[tidx, pidx] = maxlag
+            
+    return Xcorr, Xlag

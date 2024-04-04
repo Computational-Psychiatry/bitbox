@@ -1,5 +1,6 @@
 from bitbox.face_backend import FaceProcessor3DI
 from bitbox.signal_processing import peak_detection
+from bitbox.coordination import intra_person_coordination2
 
 import os
 import numpy as np
@@ -18,4 +19,6 @@ rect, land, exp_glob, pose, land_can, exp_loc = processor.run_all()
 data = np.array(list(exp_loc['data'].values())).astype('float')
 
 peaks = peak_detection(data[:,33], num_scales=6, fps=30, visualize=True)
+
+corr_mean, corr_lag, corr_std = intra_person_coordination2(exp_loc, width=90)
 
