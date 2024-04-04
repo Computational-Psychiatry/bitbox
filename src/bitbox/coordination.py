@@ -1,9 +1,39 @@
-from .signal_processing import  windowed_cross_correlation, windowed_cross_correlation2
+from .signal_processing import  windowed_cross_correlation, windowed_cross_correlation_2S
 from .utilities import dictionary_to_array
 
 import numpy as np
 
-def intra_person_coordination(data, axis=0, width=90, lag=None, step=None, ordinal=False):
+
+def intra_person_coordination(data, axis=0, width=0.5, lag=None, step=None, fps=30):
+    # check if data is a dictionary
+    if isinstance(data, dict):
+        data = dictionary_to_array(data)
+    
+    # whether rows are time points (axis=0) or signals (axis=1)
+    if axis == 1:
+        data = data.T
+        
+    num_signals = data.shape[1]
+    
+    corr_mean = np.zeros((num_signals, num_signals))
+    corr_std = np.zeros((num_signals, num_signals))
+    corr_lag = np.zeros((num_signals, num_signals))
+    
+    corrs, lags = windowed_cross_correlation(data, data, width=width, lag=lag, step=step)
+    
+    pairs = [(i1, i2) for i1 in range(num_signals) for i2 in range(num_signals)]
+    
+    # calculate the average correlation and lag
+    for idx in range(corrs.shape[1]):
+        i, j = pairs[idx]
+        corr_mean[i,j] = corrs[:,idx].mean()
+        corr_std[i,j] = corrs[:,idx].std()
+        corr_lag[i,j] = lags[:,idx].mean()
+            
+    return corr_mean, corr_lag, corr_std
+
+
+def intra_person_coordination_2S(data, axis=0, width=0.5, lag=None, step=None, fps=30, ordinal=False):
     # check if data is a dictionary
     if isinstance(data, dict):
         data = dictionary_to_array(data)
@@ -26,7 +56,7 @@ def intra_person_coordination(data, axis=0, width=90, lag=None, step=None, ordin
             y = data[:,j]
             
             # calculate the windowed cross-correlation
-            corrs = windowed_cross_correlation(x, y, width=width, lag=lag, step=step, ordinal=ordinal)
+            corrs = windowed_cross_correlation_2S(x, y, width=width, lag=lag, step=step, ordinal=ordinal)
             
             # calculate the average correlation
             corr_mean[i,j] = corr_mean[j,i] = np.mean(corrs)
@@ -34,32 +64,7 @@ def intra_person_coordination(data, axis=0, width=90, lag=None, step=None, ordin
             
     return corr_mean, corr_std
 
-def intra_person_coordination2(data, axis=0, width=3, lag=None, step=None, ordinal=False):
-    # check if data is a dictionary
-    if isinstance(data, dict):
-        data = dictionary_to_array(data)
-    
-    # whether rows are time points (axis=0) or signals (axis=1)
-    if axis == 1:
-        data = data.T
-        
-    num_signals = data.shape[1]
-    
-    corr_mean = np.zeros((num_signals, num_signals))
-    corr_std = np.zeros((num_signals, num_signals))
-    corr_lag = np.zeros((num_signals, num_signals))
-    
-    corrs, lags = windowed_cross_correlation2(data, data, width=width, lag=lag, step=step, ordinal=ordinal)
-    
-    pairs = [(i1, i2) for i1 in range(num_signals) for i2 in range(num_signals)]
-    
-    for idx in range(corrs.shape[1]):
-        i, j = pairs[idx]
-        corr_mean[i,j] = corrs[:,idx].mean()
-        corr_std[i,j] = corrs[:,idx].std()
-        corr_lag[i,j] = lags[:,idx].mean()
-            
-    return corr_mean, corr_lag, corr_std
+
 
 
             

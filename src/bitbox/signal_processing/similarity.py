@@ -32,12 +32,19 @@ def _xcorr(x, y, ordinal=False):
     
     return rs
 
-def windowed_cross_correlation(x, y, width=90, lag=None, step=None, ordinal=False, negative=0):
+
+def windowed_cross_correlation_2S(x, y, width=0.5, lag=None, step=None, fps=30, ordinal=False, negative=0):
+    width = int(round(fps*width))
+    
     if step is None:
         step = int(width/2.)
+    else:
+        step = int(round(fps*step))
     
     if lag is None:
         lag = int(width/4.)
+    else:
+        lag = int(round(fps*lag))
     
     # pick the shorter array and slide in the longer one
     if len(x) <= len(y):
@@ -81,7 +88,7 @@ def windowed_cross_correlation(x, y, width=90, lag=None, step=None, ordinal=Fals
     return np.array(corrs)
 
 
-def windowed_cross_correlation2(X, Y, width=3, lag=None, step=None, fps=30, ordinal=False, negative=0):
+def windowed_cross_correlation(X, Y, width=0.5, lag=None, step=None, fps=30):
     width = int(round(fps*width))
     
     if step is None:
@@ -128,7 +135,7 @@ def windowed_cross_correlation2(X, Y, width=3, lag=None, step=None, fps=30, ordi
             corr[-zero_out_frames:] = -1
                                 
             maxcorr = np.max(corr)
-            maxlag = np.argmax(corr) - round(width / 2)
+            maxlag = (np.argmax(corr) - round(width / 2)) / fps # in seconds
         
             Xcorr[tidx, pidx] = maxcorr
             Xlag[tidx, pidx] = maxlag
