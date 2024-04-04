@@ -7,7 +7,7 @@ import numpy as np
 
 # Please make sure you give the correct full (not relative) path
 DIR = '/home/tuncb/Works/code/compsy/bitbox/tutorials'
-input_file = os.path.join(DIR, 'data/birkan.mp4') 
+input_file = os.path.join(DIR, 'data/elaine.mp4')
 output_dir = os.path.join(DIR, 'output')
 
 processor = FaceProcessor3DI()

@@ -82,8 +82,7 @@ def windowed_cross_correlation(x, y, width=90, lag=None, step=None, ordinal=Fals
 
 
 def windowed_cross_correlation2(X, Y, width=3, lag=None, step=None, fps=30, ordinal=False, negative=0):
-    width_seconds = width
-    width = int(round(fps*width_seconds))
+    width = int(round(fps*width))
     
     if step is None:
         step = int(width/2.)
