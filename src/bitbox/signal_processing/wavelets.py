@@ -75,7 +75,7 @@ def _visualize_peaks(signal, wavelets, peaks, fps):
         dx = round(seconds.max() / 40, 2)
         ax[s].set_xticks(np.arange(0, seconds.max()+dx, dx))
 
-def peak_detection(data, num_scales=6, fps=30, visualize=False):
+def peak_detection(data, num_scales=6, fps=30, smooth=True, visualize=False):
     # check if the data is a list
     if not isinstance(data, list):
         datal = [data]
@@ -86,6 +86,10 @@ def peak_detection(data, num_scales=6, fps=30, visualize=False):
     peaksl = []
     for i in range(len(datal)):
         signal = datal[i]
+        
+        # smooth the signal
+        if smooth:
+            signal = gaussian_filter(signal, sigma=1)
         
         # wavelet decomposition at multiple scales
         scales = (fps/30) * np.geomspace(1, 18, num=num_scales)      
