@@ -107,6 +107,9 @@ def windowed_cross_correlation2(X, Y, width=3, lag=None, step=None, fps=30, ordi
     for pidx in range(0, len(pairs)):
         pair = pairs[pidx]
         
+        if pair[0] == pair[1]:
+            continue
+        
         for tidx in range(0, Nwindows):
             t1 = window_offsets[tidx]
             t2 = t1
