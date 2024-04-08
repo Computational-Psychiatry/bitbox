@@ -14,7 +14,7 @@ def _value_at_percentile(data, percentile):
     # Return the value at the calculated index
     return sorted_data[index]
 
-def _peak_detector(signal, noise_removal=True):
+def _peak_detector(signal, noise_removal=False):
     # Treat positive and negative peaks separately
     # output is 0,1, or -1, with 1 for peaks and -1 for valleys
     positives = signal.copy()
@@ -76,7 +76,7 @@ def _visualize_peaks(signal, wavelets, peaks, fps):
         dx = round(seconds.max() / 40, 2)
         ax[s].set_xticks(np.arange(0, seconds.max()+dx, dx))
 
-def peak_detection(data, num_scales=6, fps=30, smooth=True, noise_removal=True, visualize=False):
+def peak_detection(data, num_scales=6, fps=30, smooth=True, noise_removal=False, visualize=False):
     # check if the data is a list
     if not isinstance(data, list):
         datal = [data]

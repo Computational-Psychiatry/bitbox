@@ -41,7 +41,7 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
         signal = data[:,i]
         
         # detect peaks at multiple scales
-        peaks = peak_detection(signal, num_scales=num_scales, fps=fps, smooth=True, noise_removal=True)
+        peaks = peak_detection(signal, num_scales=num_scales, fps=fps, smooth=True, noise_removal=False)
         
         # number of peaks, overall average (across entire signal), mean (across peak activations), std, min, max
         results = np.zeros([num_scales, 6])
@@ -68,6 +68,7 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
             
             # calculate the statistics
             if len(peaked_signal) == 0:
+                print("No peaks detected for signal %d at scale %d" % (i, s))
                 results[s, :] = [0, 0, 0, 0, 0, 0]
             else:
                 number = len(peaked_signal)
