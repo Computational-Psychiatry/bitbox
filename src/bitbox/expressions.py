@@ -1,5 +1,5 @@
 from .utilities import dictionary_to_array
-from .signal_processing import peak_detection, outlier_detection
+from .signal_processing import peak_detection, outlier_detectionIQR
 
 import numpy as np
 
@@ -46,12 +46,12 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
                 raise ValueError("Invalid value for use_negatives")
             
             # extract the peaked signal
-            # if robust, we only consider the 95% of the data, removing possible outliers and noise
-            if robust and len(idx) > 10:
-                peaked_signal = outlier_detection(signal[idx])
-            else:
-                peaked_signal = signal[idx]
-            
+            # if robust, we only consider inliers (removing outliers)
+            peaked_signal = signal[idx]
+            if robust and len(idx) > 5:
+                outliers = outlier_detectionIQR(peaked_signal)
+                peaked_signal = np.delete(peaked_signal, outliers)
+                
             # calculate the statistics
             if len(peaked_signal) == 0:
                 print("No peaks detected for signal %d at scale %d" % (i, s))

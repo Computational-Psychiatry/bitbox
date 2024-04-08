@@ -15,15 +15,32 @@ def data_within_95_percent(data):
     return trimmed_data
 
 
-def outlier_detection(data, thresh=3.5):
+def outlier_detectionMAD(data, thresh=3.5):
     # compute median-absolute-deviation (MAD)
     median = np.median(data)
     diff = np.sqrt((data-median)**2)
     med_abs_deviation = np.median(diff)
     modified_z_score = 0.6745 * diff / med_abs_deviation
 
-    # remove outliers
-    trimmed_data = data[modified_z_score < thresh]
+    # identify outliers
+    outliers = np.where(modified_z_score > thresh)[0]
     
-    # Return the trimmed data
-    return trimmed_data
+    return outliers
+
+
+def outlier_detectionIQR(data):
+    # 25 and 75 quartiles
+    Q1 = np.percentile(data, 25)
+    Q3 = np.percentile(data, 75)
+    
+    # interquartile range
+    IQR = Q3 - Q1
+    
+    # define the bounds for outliers
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    
+    # identify outliers
+    outliers = np.where((data < lower_bound) | (data > upper_bound))[0]
+    
+    return outliers
