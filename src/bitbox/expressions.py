@@ -34,39 +34,51 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
     
     num_signals = data.shape[1]
     
-    # number of peaks, overall average (across entire signal), mean (across peak activations), std, min, max
-    expresivity_stats = np.zeros([num_signals, 6])
+    expresivity_stats = []
     
     # for each signal
     for i in range(num_signals):
         signal = data[:,i]
+        
         # detect peaks at multiple scales
         peaks = peak_detection(signal, num_scales=num_scales, fps=fps, smooth=True, noise_removal=True)
         
-        # whether we use negative peaks
-        if use_negatives == 0:
-            idx = np.where(peaks[peaks==1])[0]
-        elif use_negatives == 1:
-            idx = np.where(peaks[peaks==-1])[0]
-        elif use_negatives == 2:
-            idx = np.where(peaks!=0)[0]
-        else:
-            raise ValueError("Invalid value for use_negatives")
+        # number of peaks, overall average (across entire signal), mean (across peak activations), std, min, max
+        results = np.zeros([num_scales, 6])
         
-        # extract the peaked signal
-        # if robust, we only consider the 95% of the data, removing possible outliers and noise
-        if robust:
-            peaked_signal = _data_within_95_percent(signal[idx])
-        else:
-            peaked_signal = signal[idx]
+        for s in range(num_scales):
+            _peaks = peaks[s, :]
+            
+            # whether we use negative peaks
+            if use_negatives == 0:
+                idx = np.where(_peaks==1)[0]
+            elif use_negatives == 1:
+                idx = np.where(_peaks==-1)[0]
+            elif use_negatives == 2:
+                idx = np.where(_peaks!=0)[0]
+            else:
+                raise ValueError("Invalid value for use_negatives")
+            
+            # extract the peaked signal
+            # if robust, we only consider the 95% of the data, removing possible outliers and noise
+            if robust:
+                peaked_signal = _data_within_95_percent(signal[idx])
+            else:
+                peaked_signal = signal[idx]
+            
+            # calculate the statistics
+            if len(peaked_signal) == 0:
+                results[s, :] = [0, 0, 0, 0, 0, 0]
+            else:
+                number = len(peaked_signal)
+                average = peaked_signal.sum() / len(signal)
+                mean = peaked_signal.mean()
+                std = peaked_signal.std()
+                min = peaked_signal.min()
+                max = peaked_signal.max()
+                results[s, :] = [number, average, mean, std, min, max]
         
-        number = len(peaked_signal)
-        average = peaked_signal.sum() / len(signal)
-        mean = peaked_signal.mean()
-        std = peaked_signal.std()
-        min = peaked_signal.min()
-        max = peaked_signal.max()
-        expresivity_stats[i, :] = [number, average, mean, std, min, max]
+        expresivity_stats.append(results)
         
     return expresivity_stats
 
