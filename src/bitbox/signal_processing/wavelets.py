@@ -86,7 +86,10 @@ def peak_detection(data, num_scales=6, fps=30, smooth=True, noise_removal=False,
     # for each signal in the list
     peaksl = []
     for i in range(len(datal)):
-        signal = datal[i]
+        signal_org = datal[i]
+        
+        # zero mean the signal
+        signal = signal_org - signal_org.mean()
         
         # smooth the signal
         if smooth:
@@ -104,7 +107,7 @@ def peak_detection(data, num_scales=6, fps=30, smooth=True, noise_removal=False,
         peaksl.append(peaks)
             
         if visualize:
-            _visualize_peaks(signal, wavelets, peaks, fps)
+            _visualize_peaks(signal_org, wavelets, peaks, fps)
             
     if not isinstance(data, list):
         peaksl = peaksl[0]
