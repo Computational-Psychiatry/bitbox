@@ -89,7 +89,7 @@ def peak_detection(data, num_scales=6, fps=30, smooth=True, noise_removal=False,
         signal_org = datal[i]
         
         # zero mean the signal
-        signal = signal_org# - signal_org.mean()
+        signal = signal_org - signal_org.mean()
         
         # smooth the signal
         if smooth:
