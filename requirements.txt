@@ -5,3 +5,7 @@ scikit-learn
 python-dateutil
 PyWavelets
 matplotlib
+sphinx
+sphinx-rtd-theme
+pydata_sphinx_theme
+sphinx-autobuild
