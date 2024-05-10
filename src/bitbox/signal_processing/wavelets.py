@@ -5,6 +5,15 @@ import matplotlib.pylab as plt
 import pywt
 
 def _value_at_percentile(data, percentile):
+    """_summary_
+
+    :param data: _description_
+    :type data: _type_
+    :param percentile: _description_
+    :type percentile: _type_
+    :return: _description_
+    :rtype: _type_
+    """
     # Sort the data
     sorted_data = np.sort(data)
     # Calculate the index. Note: numpy uses 0-based indexing
@@ -15,6 +24,13 @@ def _value_at_percentile(data, percentile):
     return sorted_data[index]
 
 def _peak_detector(signal):
+    """_summary_
+
+    :param signal: _description_
+    :type signal: _type_
+    :return: _description_
+    :rtype: _type_
+    """
     # Treat positive and negative peaks separately
     # output is 0,1, or -1, with 1 for peaks and -1 for valleys
     positives = signal.copy()
@@ -42,6 +58,15 @@ def _peak_detector(signal):
     return output
 
 def _wavelet_decomposition(signal, scales):
+    """_summary_
+
+    :param signal: _description_
+    :type signal: _type_
+    :param scales: _description_
+    :type scales: _type_
+    :return: _description_
+    :rtype: _type_
+    """
     # decomposition
     cwtmatr, freqs = pywt.cwt(signal, scales, 'mexh')
     
@@ -51,6 +76,17 @@ def _wavelet_decomposition(signal, scales):
     return cwtmatr
 
 def _visualize_peaks(signal, wavelets, peaks, fps):
+    """_summary_
+
+    :param signal: _description_
+    :type signal: _type_
+    :param wavelets: _description_
+    :type wavelets: _type_
+    :param peaks: _description_
+    :type peaks: _type_
+    :param fps: _description_
+    :type fps: _type_
+    """
     num_scales = wavelets.shape[0]
     dt = 1. / fps
     seconds = dt * np.arange(len(signal))
@@ -76,6 +112,21 @@ def _visualize_peaks(signal, wavelets, peaks, fps):
         ax[s].set_xticks(np.arange(0, seconds.max()+dx, dx))
 
 def peak_detection(data, num_scales=6, fps=30, smooth=True, visualize=False):
+    """_summary_
+
+    :param data: _description_
+    :type data: _type_
+    :param num_scales: _description_, defaults to 6
+    :type num_scales: int, optional
+    :param fps: _description_, defaults to 30
+    :type fps: int, optional
+    :param smooth: _description_, defaults to True
+    :type smooth: bool, optional
+    :param visualize: _description_, defaults to False
+    :type visualize: bool, optional
+    :return: _description_
+    :rtype: _type_
+    """
     # check if the data is a list
     if not isinstance(data, list):
         datal = [data]

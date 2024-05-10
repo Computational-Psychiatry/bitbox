@@ -2,7 +2,18 @@ from scipy.stats import pearsonr, spearmanr
 import math
 import numpy as np
 
-def _xcorr(x, y, ordinal=False):   
+def _xcorr(x, y, ordinal=False):
+    """_summary_
+
+    :param x: _description_
+    :type x: _type_
+    :param y: _description_
+    :type y: _type_
+    :param ordinal: _description_, defaults to False
+    :type ordinal: bool, optional
+    :return: _description_
+    :rtype: _type_
+    """
     if ordinal:
         correlation = spearmanr
     else:
@@ -34,6 +45,27 @@ def _xcorr(x, y, ordinal=False):
 
 
 def windowed_cross_correlation_2S(x, y, width=0.5, lag=None, step=None, fps=30, ordinal=False, negative=0):
+    """_summary_
+
+    :param x: _description_
+    :type x: _type_
+    :param y: _description_
+    :type y: _type_
+    :param width: _description_, defaults to 0.5
+    :type width: float, optional
+    :param lag: _description_, defaults to None
+    :type lag: _type_, optional
+    :param step: _description_, defaults to None
+    :type step: _type_, optional
+    :param fps: _description_, defaults to 30
+    :type fps: int, optional
+    :param ordinal: _description_, defaults to False
+    :type ordinal: bool, optional
+    :param negative: _description_, defaults to 0
+    :type negative: int, optional
+    :return: _description_
+    :rtype: _type_
+    """
     width = int(round(fps*width))
     
     if step is None:
@@ -89,6 +121,23 @@ def windowed_cross_correlation_2S(x, y, width=0.5, lag=None, step=None, fps=30, 
 
 
 def windowed_cross_correlation(X, Y, width=0.5, lag=None, step=None, fps=30):
+    """_summary_
+
+    :param X: _description_
+    :type X: _type_
+    :param Y: _description_
+    :type Y: _type_
+    :param width: _description_, defaults to 0.5
+    :type width: float, optional
+    :param lag: _description_, defaults to None
+    :type lag: _type_, optional
+    :param step: _description_, defaults to None
+    :type step: _type_, optional
+    :param fps: _description_, defaults to 30
+    :type fps: int, optional
+    :return: _description_
+    :rtype: _type_
+    """
     width = int(round(fps*width))
     
     if step is None:

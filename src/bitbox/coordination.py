@@ -5,6 +5,23 @@ import numpy as np
 
 
 def intra_person_coordination(data, axis=0, width=0.5, lag=None, step=None, fps=30):
+    """_summary_
+
+    :param data: _description_
+    :type data: _type_
+    :param axis: _description_, defaults to 0
+    :type axis: int, optional
+    :param width: _description_, defaults to 0.5
+    :type width: float, optional
+    :param lag: _description_, defaults to None
+    :type lag: _type_, optional
+    :param step: _description_, defaults to None
+    :type step: _type_, optional
+    :param fps: _description_, defaults to 30
+    :type fps: int, optional
+    :return: _description_
+    :rtype: _type_
+    """
     # check if data is a dictionary
     if isinstance(data, dict):
         data = dictionary_to_array(data)
@@ -34,6 +51,25 @@ def intra_person_coordination(data, axis=0, width=0.5, lag=None, step=None, fps=
 
 
 def intra_person_coordination_2S(data, axis=0, width=0.5, lag=None, step=None, fps=30, ordinal=False):
+    """_summary_
+
+    :param data: _description_
+    :type data: _type_
+    :param axis: _description_, defaults to 0
+    :type axis: int, optional
+    :param width: _description_, defaults to 0.5
+    :type width: float, optional
+    :param lag: _description_, defaults to None
+    :type lag: _type_, optional
+    :param step: _description_, defaults to None
+    :type step: _type_, optional
+    :param fps: _description_, defaults to 30
+    :type fps: int, optional
+    :param ordinal: _description_, defaults to False
+    :type ordinal: bool, optional
+    :return: _description_
+    :rtype: _type_
+    """
     # check if data is a dictionary
     if isinstance(data, dict):
         data = dictionary_to_array(data)

@@ -15,6 +15,18 @@ from .reader3DI import read_rectangles, read_landmarks
 from .reader3DI import read_pose, read_expression, read_canonical_landmarks
 
 class FaceProcessor3DI:
+    """ 
+       Facial analysis object with a diverse set of functions for computational analysis on nonverbal human behavior.
+       
+       :param camera_model: int representing field of view, or string to a filepath for those specifications. If it's an int, then you cannot execute undistort method.
+       :type camera_model: int, string
+       :param landmark_model: Identifies what landmark model is being used
+       :type landmark_model: string       
+       :param fast: Changes the landmark model being used to improve runtime. Uses few landmarks.
+       :type fast: bool
+       :param return_dict: Decides whether the functions called return values in a dictionary or as a filepath.
+       :type return_dict: bool
+    """
     def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_output=True):
         self.file_input = None
         self.dir_output = None
@@ -176,6 +188,15 @@ class FaceProcessor3DI:
     
         
     def io(self, input_file, output_dir):
+        """
+            Checks for supported video extensions and sets up all output file directories. 
+
+            :param input_file: Supported video extensions
+            :type input_file: .mp4, .avi, .mpeg
+            :param output_dir: output folder name
+            :type output_dir: string
+            :return: None 
+        """
         # supported video extensions
         supported_extensions = ['mp4', 'avi', 'mpeg']
 
@@ -217,6 +238,12 @@ class FaceProcessor3DI:
                
         
     def preprocess(self, undistort=False):
+        """ Make sure all preprocessing steps are run before running any analysis.
+            
+            :param undistort: video distortion
+            :type undistort: bool
+            :return: None
+        """
         # run undistortion if needed
         if undistort==True:
             # check if proper camera parameters are provided
@@ -231,6 +258,13 @@ class FaceProcessor3DI:
             
             
     def detect_faces(self):
+        """ 
+            Detects faces in the video and outputs facial landmarks.
+
+            :param: None
+            :return: Bounding box coordinates for each detected face in the video
+            :rtype: JSON
+        """
         self._execute('video_detect_face',
                       [self.file_input, self.file_rectangles],
                       "face detection",
@@ -243,6 +277,13 @@ class FaceProcessor3DI:
             
             
     def detect_landmarks(self):
+        """
+            Detects facial landmarks in the video after successful face detection. It requires the face detection step to be completed successfully.
+
+            :param: None
+            :return: Contains the facial landmarks for each detected face in the video.
+            :rtype: ndarray
+        """
         # check if face detection was run and successful
         if self.cache.check_file(self.file_rectangles, self.base_metadata) > 0:
             raise ValueError("Face detection is not run or failed. Please run face detection first.")
@@ -259,6 +300,18 @@ class FaceProcessor3DI:
         
 
     def fit(self):
+        """ 
+        Fits a 3D face model to the detected landmarks to estimate shape,
+        texture, expressions, and poses. This method encompasses several steps 
+        including identity learning, model fitting, and smoothing expressions 
+        and poses.
+
+        Requires successful completion of the landmark detection step.
+
+        :param: None
+        :return: Contains JSON objects for smoothed expressions, smoothed poses, and canonical landmarks if `return_dict` is True. Otherwise, the respective data is saved to specified output files.
+        :rtype: JSON
+        """
         # check if landmark detection was run and successful
         if self.cache.check_file(self.file_landmarks, self.base_metadata) > 0:
             raise ValueError("Landmark detection is not run or failed. Please run landmark detection first.")
@@ -309,6 +362,13 @@ class FaceProcessor3DI:
         
 
     def localized_expressions(self):
+        """
+        Estimates localized expressions from the canonicalized landmarks. This method is to be run after successfully fitting the 3D face model and canonicalizing landmarks.
+
+        :param: None
+        :return: Contains the localized expressions for each detected face in the video. The data is also saved to a specified output file.
+        :rtype: ndarray
+        """
         # check if canonical landmark detection was run and successful
         if self.cache.check_file(self.file_landmarks_cannonicalized, self.base_metadata) > 0:
             raise ValueError("Canonical landmark detection is not run or failed. Please run fit() method first.")
@@ -326,6 +386,15 @@ class FaceProcessor3DI:
 
 
     def run_all(self, undistort=False):
+        """
+        Runs the entire pipeline from preprocessing the video, detecting faces, detecting landmarks, fitting the 3D face model, to estimating localized expressions. This method serves as a convenience for running all processing steps in sequence.
+
+        :param undistort: Indicates whether the video should be undistorted as part of the preprocessing. Defaults to False.
+        :type undistort: bool
+        :return: Placeholder for future implementations.
+        :rtype: JSON?
+             Future versions should replace these placeholders with actual output data or status indicators.
+        """
         self.preprocess(undistort)
         rect = self.detect_faces()
         land = self.detect_landmarks()
@@ -339,6 +408,10 @@ class FaceProcessor3DI:
     
     
 class FaceProcessor3DITest(FaceProcessor3DI):
+    """ This is a test class for FaceProcessor3DI.
+    :param FaceProcessor3DI: _description_
+    :type FaceProcessor3DI: _type_
+    """
     def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_output=False):
         self.file_input = None
         self.dir_output = None

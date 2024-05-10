@@ -6,6 +6,13 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 def parse_retention_period(period_str):
+    """_summary_
+
+    :param period_str: time period written as a string. ie. '6 months'
+    :type period_str: str
+    :return: The retention period
+    :rtype: datatime.timedelta object?
+    """
     parts = period_str.split()
     kwargs = {parts[i + 1]: int(parts[i]) for i in range(0, len(parts), 2)}
     
@@ -15,12 +22,36 @@ def parse_retention_period(period_str):
 
 
 class FileCache:
+    """
+        A running history of file events.
+
+        :param json_required: If True, a JSON file is required for each file. If False, a JSON file is not required.
+        :type json_required: bool
+        :param retention_period: The retention period for the files. The default is '6 months'.
+        :type retention_period: str
+    """
     def __init__(self, json_required=True, retention_period='6 months'):
         self.json_required = json_required
         self.retention_period = parse_retention_period(retention_period)
     
     
     def check_file(self, file_path, current_metadata=None, verbose=False, json_required=None, retention_period=None):
+        """_summary_
+
+        :param file_path: _description_
+        :type file_path: _type_
+        :param current_metadata: _description_, defaults to None
+        :type current_metadata: _type_, optional
+        :param verbose: _description_, defaults to False
+        :type verbose: bool, optional
+        :param json_required: _description_, defaults to None
+        :type json_required: _type_, optional
+        :param retention_period: _description_, defaults to None
+        :type retention_period: _type_, optional
+        :return: _description_
+        :rtype: _type_
+        """
+        
         # Return codes:
         # 0: file exists no need to create a new file
         # 1: file does not exist, create a new file
@@ -104,6 +135,14 @@ class FileCache:
     
     
     def store_metadata(self, file_path, base_metadata):
+        """_summary_
+
+        :param file_path: _description_
+        :type file_path: _type_
+        :param base_metadata: _description_
+        :type base_metadata: _type_
+        :raises ValueError: _description_
+        """
         additonial_metadata = {'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         metadata = {**base_metadata, **additonial_metadata}
         
@@ -116,6 +155,13 @@ class FileCache:
     
     
     def get_new_file_name(self, file_path):
+        """_summary_
+
+        :param file_path: _description_
+        :type file_path: _type_
+        :return: _description_
+        :rtype: _type_
+        """
         directory, filename = os.path.split(file_path)
         base_filename, file_extension = os.path.splitext(filename)
 
@@ -132,6 +178,12 @@ class FileCache:
     
     
     def delete_old_metadata(self, file_path):
+        """_summary_
+
+        :param file_path: _description_
+        :type file_path: _type_
+        :raises ValueError: _description_
+        """
         json_file = '.'.join(file_path.split('.')[:-1]) + '.json'
         if os.path.exists(json_file):
             os.remove(json_file)
@@ -141,6 +193,12 @@ class FileCache:
         
     
     def delete_old_file(self, file_path):
+        """_summary_
+
+        :param file_path: _description_
+        :type file_path: _type_
+        :raises ValueError: _description_
+        """
         # delete the old file
         if os.path.exists(file_path):
             os.remove(file_path)

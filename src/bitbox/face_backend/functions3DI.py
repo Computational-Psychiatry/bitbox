@@ -6,6 +6,19 @@ import os
 
 
 def save_shape_and_texture(alpha, beta, sdir, shp_path, tex_path):
+        """_summary_
+
+        :param alpha: _description_
+        :type alpha: _type_
+        :param beta: _description_
+        :type beta: _type_
+        :param sdir: _description_
+        :type sdir: _type_
+        :param shp_path: _description_
+        :type shp_path: _type_
+        :param tex_path: _description_
+        :type tex_path: _type_
+        """
         IX  = np.loadtxt('%s/IX.dat' % sdir)
         IY  = np.loadtxt('%s/IY.dat' % sdir)
         IZ  = np.loadtxt('%s/IZ.dat' % sdir)
@@ -28,6 +41,15 @@ def save_shape_and_texture(alpha, beta, sdir, shp_path, tex_path):
 
 
 def create_expression_sequence(epsilons, E):
+    """_summary_
+
+    :param epsilons: _description_
+    :type epsilons: _type_
+    :param E: _description_
+    :type E: _type_
+    :return: _description_
+    :rtype: _type_
+    """
     ps = []
     for t in range(epsilons.shape[0]):
         epsilon = epsilons[t,:]
@@ -36,7 +58,19 @@ def create_expression_sequence(epsilons, E):
     return np.array(ps)[:,:,0]
 
 
-def total_variance_rec(model_path, e0path, epath, morphable_model='BFMmm-19830'):        
+def total_variance_rec(model_path, e0path, epath, morphable_model='BFMmm-19830'):   
+    """_summary_
+
+    :param model_path: _description_
+    :type model_path: _type_
+    :param e0path: _description_
+    :type e0path: _type_
+    :param epath: _description_
+    :type epath: _type_
+    :param morphable_model: _description_, defaults to 'BFMmm-19830'
+    :type morphable_model: str, optional
+    """
+
     e1 = np.loadtxt(e0path)
 
     imputer = KNNImputer(n_neighbors=2, weights="uniform")
@@ -104,6 +138,13 @@ def total_variance_rec(model_path, e0path, epath, morphable_model='BFMmm-19830')
     
     
 def total_variance_rec_pose(ppath, pnewpath):
+    """_summary_
+
+    :param ppath: _description_
+    :type ppath: _type_
+    :param pnewpath: _description_
+    :type pnewpath: _type_
+    """
     trans1 = np.loadtxt(ppath)[:,0:3]
     p1 = np.loadtxt(ppath)[:,3:6]
     a1 = np.loadtxt(ppath)[:,6:]
@@ -186,6 +227,17 @@ def total_variance_rec_pose(ppath, pnewpath):
     
 
 def compute_canonicalized_landmarks(model_path, epath, lpath, morphable_model='BFMmm-19830'):
+    """_summary_
+
+    :param model_path: _description_
+    :type model_path: _type_
+    :param epath: _description_
+    :type epath: _type_
+    :param lpath: _description_
+    :type lpath: _type_
+    :param morphable_model: _description_, defaults to 'BFMmm-19830'
+    :type morphable_model: str, optional
+    """
     sdir = os.path.join(model_path, 'models/MMs/%s' % morphable_model)
     
     li = [17286,17577,17765,17885,18012,18542,18668,18788,18987,19236,7882,7896,7905,7911,6479,7323,
@@ -229,6 +281,17 @@ def compute_canonicalized_landmarks(model_path, epath, lpath, morphable_model='B
     
     
 def compute_localized_expressions(model_path, canonical_lmks_file, local_exp_coeffs_file, morphable_model='BFMmm-19830'):
+    """_summary_
+
+    :param model_path: _description_
+    :type model_path: _type_
+    :param canonical_lmks_file: _description_
+    :type canonical_lmks_file: _type_
+    :param local_exp_coeffs_file: _description_
+    :type local_exp_coeffs_file: _type_
+    :param morphable_model: _description_, defaults to 'BFMmm-19830'
+    :type morphable_model: str, optional
+    """
     basis_version = '0.0.1.4'
     
     sdir = os.path.join(model_path, f'models/MMs/{morphable_model}/')
