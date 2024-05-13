@@ -1,7 +1,6 @@
 import json
 import os
 import numpy as np
-from importlib import resources
 
 def landmarkFrameMapper(frame: str, landmarks: dict, landmark_regions: dict, region_mapping_coordinates_all_frames: dict, type: str) -> dict:
     """
@@ -116,7 +115,7 @@ def mapperLandmarksToCordinatesEDMA(landmarks: dict, frames):
 
     """
     # Get the region-wise landmark mapping
-    landmark_mapping = json.loads(resources.read_text('utilities.Resource_Files', 'landmark_region_mappers.json'))
+    landmark_mapping = get_landmark_region_mapping()
     # Map landmarks to region-wise coordinates using normal mapping
     regionwiselandmarkmappedframes, region = landmarkMappingRegionwiseCoordinates(landmarks, landmark_mapping, frames, type="normal")
     # Return the region-wise coordinates
@@ -139,11 +138,11 @@ def mapperLandmarksToCordinatesMirrorError(landmarks: dict, frames):
     """
     # Get the region-wise landmark mapping
     # landmark_mapping = landmark_mapping_region_wise()
-    landmark_mapping = json.loads(resources.read_text('utilities.Resource_Files', 'landmark_region_mappers.json'))
+    landmark_mapping = get_landmark_region_mapping()
     # Map landmarks to region-wise coordinates using normal mapping
     regionwiselandmarkmappedframes, region = landmarkMappingRegionwiseCoordinates(landmarks, landmark_mapping, frames, type="normal")
     # Get the reverse region-wise landmark mapping
-    landmark_mapping_reverse = json.loads(resources.read_text('utilities.Resource_Files', 'landmark_region_mapping_reverse.json'))
+    landmark_mapping_reverse = get_landmark_region_mapping_reverse()
     # Map landmarks to region-wise coordinates using reverse mapping
     regionwiselandmarkmappedframesreverse, region = landmarkMappingRegionwiseCoordinates(landmarks, landmark_mapping_reverse, frames, type="reverse")
     # Return the region-wise coordinates and the region mapping
@@ -156,3 +155,20 @@ def mouth_ul_ll_to_rm_lm(mo):
     right_mouth_bb_frame = mo[3:6] + mo[8:14] + mo[16:19]
     return left_mouth_bb_frame, right_mouth_bb_frame
 
+
+def get_landmark_region_mapping_reverse():
+    return {"landmarkRegionMappingReverse": {
+    "lb": [9,8,7,6,5],  
+    "le": [28, 27, 26, 25, 30, 29],  
+    "no": [10, 11, 12, 13, 18, 17, 16, 15, 14],  
+    "rb": [4,3,2,1,0], 
+    "re": [22, 21, 20, 19, 24, 23], 
+    "mo": [37, 36, 35, 34, 33, 32, 47, 46, 45, 44, 31, 42, 41, 40, 39, 38, 43, 50, 49, 48]}} 
+
+def get_landmark_region_mapping():
+    return {"landmarkRegionMapping":{"lb": [0, 1, 2, 3, 4],  
+    "rb": [5, 6, 7, 8, 9], 
+    "no": [10, 11, 12, 13, 14, 15, 16, 17, 18],  
+    "le": [19, 20, 21, 22, 23, 24], 
+    "re": [25, 26, 27, 28, 29, 30], 
+    "mo": [31, 32, 33, 34, 35, 36, 43, 44, 45, 46, 37, 38, 39, 40, 41, 42, 47, 48, 49, 50]}}
