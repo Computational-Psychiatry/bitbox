@@ -229,7 +229,7 @@ def compute_canonicalized_landmarks(model_path, epath, lpath, morphable_model='B
     
     
 def compute_localized_expressions(model_path, canonical_lmks_file, local_exp_coeffs_file, morphable_model='BFMmm-19830'):
-    basis_version = '0.0.1.4'
+    basis_version = '0.0.1.F591-cd-K32d'
     
     sdir = os.path.join(model_path, f'models/MMs/{morphable_model}/')
     localized_basis_file = os.path.join(model_path, f'models/MMs/{morphable_model}/E/localized_basis/v.{basis_version}.npy')
