@@ -14,7 +14,7 @@ def _value_at_percentile(data, percentile):
     # Return the value at the calculated index
     return sorted_data[index]
 
-def _peak_detector(signal):
+def _peak_detector(signal, noise_removal=False):
     # Treat positive and negative peaks separately
     # output is 0,1, or -1, with 1 for peaks and -1 for valleys
     positives = signal.copy()
@@ -32,10 +32,11 @@ def _peak_detector(signal):
         peaks = np.where(jumps == -2)[0] + 1
         
         # remove tiny peaks
-        magnitudes = np.abs(signal[peaks])
-        thresholds = _value_at_percentile(magnitudes, 97.5) * 0.1
-        idx = np.where(magnitudes < thresholds)[0]
-        peaks = np.delete(peaks, idx)
+        if noise_removal:
+            magnitudes = np.abs(signal[peaks])
+            thresholds = _value_at_percentile(magnitudes, 97.5) * 0.1
+            idx = np.where(magnitudes < thresholds)[0]
+            peaks = np.delete(peaks, idx)
         
         output[peaks] = 1 if s == 0 else -1
         
@@ -75,7 +76,7 @@ def _visualize_peaks(signal, wavelets, peaks, fps):
         dx = round(seconds.max() / 40, 2)
         ax[s].set_xticks(np.arange(0, seconds.max()+dx, dx))
 
-def peak_detection(data, num_scales=6, fps=30, smooth=True, visualize=False):
+def peak_detection(data, num_scales=6, fps=30, smooth=True, noise_removal=False, visualize=False):
     # check if the data is a list
     if not isinstance(data, list):
         datal = [data]
@@ -85,7 +86,10 @@ def peak_detection(data, num_scales=6, fps=30, smooth=True, visualize=False):
     # for each signal in the list
     peaksl = []
     for i in range(len(datal)):
-        signal = datal[i]
+        signal_org = datal[i]
+        
+        # zero mean the signal
+        signal = signal_org - signal_org.mean()
         
         # smooth the signal
         if smooth:
@@ -98,12 +102,12 @@ def peak_detection(data, num_scales=6, fps=30, smooth=True, visualize=False):
         # peak detection at different scales
         peaks = np.zeros_like(wavelets)
         for s in range(num_scales):
-            peaks[s, :] = _peak_detector(wavelets[s, :])
+            peaks[s, :] = _peak_detector(wavelets[s, :], noise_removal=noise_removal)
             
         peaksl.append(peaks)
             
         if visualize:
-            _visualize_peaks(signal, wavelets, peaks, fps)
+            _visualize_peaks(signal_org, wavelets, peaks, fps)
             
     if not isinstance(data, list):
         peaksl = peaksl[0]

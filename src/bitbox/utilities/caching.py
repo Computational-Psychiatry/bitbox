@@ -150,3 +150,6 @@ class FileCache:
         
         # delete the old metadata file
         self.delete_old_metadata(file_path)
+        
+    def change_retention_period(self, retention_period):
+        self.retention_period = parse_retention_period(retention_period)
