@@ -6,13 +6,13 @@ Please refer to our [Wiki](https://github.com/Computational-Psychiatry/bitbox/wi
 
 ## Installation
 
-Before installing Bitbox, you need to install 3DI. If 3DI is not installed, you will receive an error when trying to use Bitbox. 3DI repository is located at [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). You will need to use python 3.8 or higher. 
+Before installing Bitbox, you need to install 3DI. If 3DI is not installed, you will receive an error when trying to use Bitbox. 3DI repository is located at [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). **You will need to use python 3.8 or higher**. 
 
 To install Bitbox, follow these steps:
 
 1. Create a virtual environment and activate it:
     ```bash
-    python3 -m venv env
+    python3.8 -m venv env
     source env/bin/activate
     ```
     Note that this will create a virtual environment named `env` in the current directory. You can use any name, and you can install the virtual environment anywhere you like. Just don't forget where you installed it. For the following steps, we will assume you have activated the virtual environment.
@@ -57,5 +57,42 @@ To install Bitbox, follow these steps:
 
 Now you are ready to use Bitbox!
 
+## Use
 
+Once you are done with installation, you can use Bitbox by
+
+1. Activate the virtual environment you created for Bitbox:
+    ```bash
+    source env/bin/activate
+    ```
+2. Set the environment variable `PATH_3DI`. You need to do this only if you did not set it in .bahsrc (on Lunux/Mac) or in System's Environment Variables (on Windows). If you did that you can skip this step.
+
+3. Import the library in your Python code:
+ ```python
+from bitbox.face_backend import FaceProcessor3DI
+import os
+
+# Please make sure you give the correct full (not relative) path
+DIR = '/path/to/tutorials'
+input_file = os.path.join(DIR, 'data/elaine.mp4') 
+output_dir = os.path.join(DIR, 'output')
+
+# define a face processor
+processor = FaceProcessor3DI()
+
+# set input and output
+processor.io(input_file=input_file, output_dir=output_dir)
+
+# detect faces
+rects = processor.detect_faces()
+
+# detect landmarks
+lands = processor.detect_landmarks()
+
+# compute global expressions
+exp_global, pose, lands_can = processor.fit()
+
+# compute localized expressions
+exp_local = processor.localized_expressions()
+ ```
 
