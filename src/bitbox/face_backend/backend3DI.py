@@ -82,8 +82,8 @@ class FaceProcessor3DI:
         compute_canonicalized_landmarks(self.execDIR, exp_path, exp_path_new, self.model_morphable)
     
     
-    def _local_expressions(self, land_path, exp_path):
-        compute_localized_expressions(self.execDIR, land_path, exp_path, self.model_morphable)
+    def _local_expressions(self, land_path, normalize, exp_path):
+        compute_localized_expressions(self.execDIR, land_path, exp_path, self.model_morphable, normalize)
     
     
     def _run_command(self, executable, parameters, output_file_idx, system_call):                  
@@ -308,13 +308,13 @@ class FaceProcessor3DI:
             return None, None, None
         
 
-    def localized_expressions(self):
+    def localized_expressions(self, normalize=True):
         # check if canonical landmark detection was run and successful
-        if self.cache.check_file(self.file_landmarks_cannonicalized, self.base_metadata) > 0:
-            raise ValueError("Canonical landmark detection is not run or failed. Please run fit() method first.")
+        if self.cache.check_file(self.file_expression_smooth, self.base_metadata) > 0:
+            raise ValueError("Expression quantification is not run or failed. Please run fit() method first.")
         
         self._execute('_local_expressions',
-                    [self.file_landmarks_cannonicalized, self.file_expression_localized],
+                    [self.file_expression_smooth, normalize, self.file_expression_localized],
                     "localized expression estimation",
                     output_file_idx=-1,
                     system_call=False)
@@ -325,12 +325,12 @@ class FaceProcessor3DI:
             return None
 
 
-    def run_all(self, undistort=False):
+    def run_all(self, undistort=False, normalize=True):
         self.preprocess(undistort)
         rect = self.detect_faces()
         land = self.detect_landmarks()
         exp_glob, pose, land_can = self.fit()
-        exp_loc = self.localized_expressions()
+        exp_loc = self.localized_expressions(normalize=normalize)
         
         if self.return_output:
             return rect, land, exp_glob, pose, land_can, exp_loc

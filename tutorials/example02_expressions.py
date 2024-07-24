@@ -1,0 +1,41 @@
+from bitbox.face_backend import FaceProcessor3DI
+from bitbox.signal_processing import peak_detection
+from bitbox.coordination import intra_person_coordination
+from bitbox.expressions import expressivity
+
+import os
+import numpy as np
+
+# Please make sure you give the correct full (not relative) path
+DIR = '/home/tuncb/Works/code/compsy/bitbox/tutorials'
+input_file = os.path.join(DIR, 'data/elaine.mp4')
+output_dir = os.path.join(DIR, 'output')
+
+# define a face processor
+processor = FaceProcessor3DI()
+
+# set input and output
+processor.io(input_file=input_file, output_dir=output_dir)
+
+# run the processor
+rect, land, exp_global, pose, land_can, exp_local = processor.run_all(normalize=True)
+
+# we will use the localized expressions for the rest of the tutorial
+
+#%% Task 1: Peak Detection
+# Detect peaks and visualize them in one of the expression bases
+
+# get local expressions as a numpy array
+data = np.array(list(exp_local['data'].values())).astype('float')
+
+# select the expression bases we are intrested in
+expression = data[:, 13]
+
+# detect peaks
+peaks = peak_detection(expression, num_scales=6, fps=30, smooth=True, visualize=True)
+
+#%% Task 2: Overall expressivity
+# Quantify the overall expressivity (and its stats) of the face
+
+# calculate expressivity
+expressivity_stats = expressivity(exp_local, use_negatives=0, num_scales=6, robust=True, fps=30)

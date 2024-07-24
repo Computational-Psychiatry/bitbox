@@ -1,9 +1,17 @@
 import numpy as np
 import cvxpy as cp
 from sklearn.impute import KNNImputer
-from sklearn.decomposition import DictionaryLearning
 import os
+from sklearn.exceptions import ConvergenceWarning
 
+
+rel_ids = {'lb': np.array(list(range(0, 5))),
+             'rb': np.array(list(range(5, 10))),
+             'no': np.array(list(range(10, 19))),
+             'le': np.array(list(range(19, 25))),
+             're': np.array(list(range(25, 31))),
+             'ul': np.array(list(range(31, 37))+list(range(43, 47))),
+             'll': np.array(list(range(37, 43))+list(range(47, 51)))}
 
 def save_shape_and_texture(alpha, beta, sdir, shp_path, tex_path):
         IX  = np.loadtxt('%s/IX.dat' % sdir)
@@ -43,11 +51,9 @@ def total_variance_rec(model_path, e0path, epath, morphable_model='BFMmm-19830')
 
     for i in range(e1.shape[1]):
         e1[:,i:i+1] = imputer.fit_transform(e1[:,i:i+1])
-
-
-    li = [17286,17577,17765,17885,18012,18542,18668,18788,18987,19236,7882,7896,7905,7911,6479,7323,
-        7922,8523,9362,1586,3480,4770,5807,4266,3236,10176,11203,12364,14269,12636,11602,5243,5875,
-        7096,7936,9016,10244,10644,9638,8796,7956,7116,6269,5629,6985,7945,8905,10386,8669,7949,7229]
+    
+    sdir = os.path.join(model_path, f'models/MMs/{morphable_model}/')
+    li = np.loadtxt(f'{sdir}/li.dat').astype(int)
 
     T = e1.shape[0]
     K = e1.shape[1]
@@ -188,11 +194,8 @@ def total_variance_rec_pose(ppath, pnewpath):
 def compute_canonicalized_landmarks(model_path, epath, lpath, morphable_model='BFMmm-19830'):
     sdir = os.path.join(model_path, 'models/MMs/%s' % morphable_model)
     
-    li = [17286,17577,17765,17885,18012,18542,18668,18788,18987,19236,7882,7896,7905,7911,6479,7323,
-        7922,8523,9362,1586,3480,4770,5807,4266,3236, 10176,11203,12364,14269,12636,11602,5243,5875,
-        7096,7936,9016,10244,10644,9638,8796,7956,7116,6269,5629,6985,7945,8905,10386,8669,7949,7229]
-
-    li = np.array(li)
+    sdir = os.path.join(model_path, f'models/MMs/{morphable_model}/')
+    li = np.loadtxt(f'{sdir}/li.dat').astype(int)
 
     X0 = np.loadtxt(f'{sdir}/X0_mean.dat').reshape(-1,1)[li]
     Y0 = np.loadtxt(f'{sdir}/Y0_mean.dat').reshape(-1,1)[li]
@@ -228,57 +231,69 @@ def compute_canonicalized_landmarks(model_path, epath, lpath, morphable_model='B
     np.savetxt(lpath, np.concatenate(L, axis=0), fmt='%.4f')
     
     
-def compute_localized_expressions(model_path, canonical_lmks_file, local_exp_coeffs_file, morphable_model='BFMmm-19830'):
+def compute_localized_expressions(model_path, smooth_expression_file, local_exp_coeffs_file, morphable_model='BFMmm-19830', normalize=True):   
     basis_version = '0.0.1.F591-cd-K32d'
     
     sdir = os.path.join(model_path, f'models/MMs/{morphable_model}/')
     localized_basis_file = os.path.join(model_path, f'models/MMs/{morphable_model}/E/localized_basis/v.{basis_version}.npy')
     basis_set = np.load(localized_basis_file, allow_pickle=True).item()
+    
+    # @TODO the code does not work for differential expression computation
+    # but only for absolute expressions. It needs to be adapted to the case where
+    # basis_set['use_abs'] is set to False!
+    assert basis_set['use_abs']
 
-    P = np.loadtxt(canonical_lmks_file)
-
-    P0 = np.loadtxt(f'{sdir}/p0L_mat.dat')
-    X0 = P0[:,0]
-    Y0 = P0[:,1]
-    Z0 = P0[:,2]
-
-    rel_ids   = {'lb': np.array(list(range(0, 5))),
-                'rb': np.array(list(range(5, 10))),
-                'no': np.array(list(range(10, 19))),
-                'le': np.array(list(range(19, 25))),
-                're': np.array(list(range(25, 31))),
-                'ul': np.array(list(range(31, 37))+list(range(43, 47))),
-                'll': np.array(list(range(37, 43))+list(range(47, 51)))}
-
+    li = np.loadtxt(f'{sdir}/li.dat').astype(int)
+    
     facial_feats = list(rel_ids.keys())
 
-    T = P.shape[0]
+    epsilons = np.loadtxt(smooth_expression_file)
+
+    T = epsilons.shape[0]
+
+    Es = {}
+
+    for feat in rel_ids:
+        rel_id = rel_ids[feat]
+        EX  = np.loadtxt('%s/E/EX_79.dat' % sdir)[li[rel_id],:]
+        EY  = np.loadtxt('%s/E/EY_79.dat' % sdir)[li[rel_id],:]
+        EZ  = np.loadtxt('%s/E/EZ_79.dat' % sdir)[li[rel_id],:]
+        Es[feat] = np.concatenate((EX, EY, EZ), axis=0)
+        
+    ConvergenceWarning('ignore')
 
     C = []
-    for t in range(T):
-        cur = []
-        for feat in facial_feats:
-            rel_id = rel_ids[feat]
+    for feat in facial_feats:
+        rel_id = rel_ids[feat]
+        dp = create_expression_sequence(epsilons, Es[feat])
+        dictionary = basis_set[feat]
+        coeffs = dictionary.transform(dp).T
         
-            p = P[t,:]
-            x = p[::3]
-            y = p[1::3]
-            z = p[2::3]
-            
-            dx = x-X0
-            dy = y-Y0
-            dz = z-Z0
-            
-            # @TODO the following code does not work for differential expression computation
-            # but only for absolute expressions. It needs to be adapted to the case where
-            # basis_set['use_abs'] is set to False!
-            dp = np.concatenate((dx[rel_id], dy[rel_id], dz[rel_id]))
-            dictionary = basis_set[feat]
-            # dictionary.set_params(transform_max_iter=2000)
-            coeffs = dictionary.transform(dp.reshape(1,-1)).T
-            cur.append(coeffs)
+        # normalize
+        # 'min_0.5pctl', 'max_99.5pctl', 'min_2.5pctl', 'max_97.5pctl', 'Q1', 'Q3', 'median', 'mean', 'std'
+        if normalize:
+            if hasattr(dictionary, 'stats'):
+                stats = dictionary.stats
+                # stats_Q1 = stats['Q1'].reshape([-1,1])
+                # stats_Q3 = stats['Q3'].reshape([-1,1])
+                stats_mean = stats['mean'].reshape([-1,1])
+                stats_std = stats['std'].reshape([-1,1])
+                
+                # # remove outliers using interquartile range
+                # IQR = stats_Q3 - stats_Q1
+                # lower_bound = stats_Q1 - 1.5 * IQR
+                # upper_bound = stats_Q3 + 1.5 * IQR
+                # idx = (coeffs < lower_bound) | (coeffs > upper_bound)
+                # coeffs[idx] = 0
+                
+                # normalize (0-mean, 1-std)
+                coeffs = (coeffs - stats_mean) / stats_std
+            else:
+                print("Skipping normalization because stats on localized expressions is not available.")
+                            
+
+        C.append(coeffs)
         
-        C.append(np.concatenate(cur).reshape(-1,))
-    C = np.array(C)
+    C = np.concatenate(C).T
 
     np.savetxt(local_exp_coeffs_file, C)

@@ -20,10 +20,12 @@ processor.io(input_file=input_file, output_dir=output_dir)
 # run the processor
 rect, land, exp_glob, pose, land_can, exp_loc = processor.run_all()
 
+#%% Task 1: Intra-person Coordination
+# Quantify coordination across facial expressions (of a single person)
+
+
 # get local expressions as a numpy array
 data = np.array(list(exp_loc['data'].values())).astype('float')
-# remove 7th basis as it is constant 0
-data = np.delete(data, 6, axis=1)
 
 # detect peaks
 peaks = peak_detection(data[:,32], num_scales=6, fps=30, smooth=True, visualize=True)
