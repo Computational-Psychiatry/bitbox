@@ -12,7 +12,6 @@ setup(
     long_description = long_description,
     long_description_content_type = 'text/markdown',
     url = 'https://github.com/Computational-Psychiatry/bitbox',
-    license = 'GPL-3.0',
     classifiers = [
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
@@ -28,6 +27,7 @@ setup(
         'scikit-learn',
         'python-dateutil',
         'PyWavelets',
-        'matplotlib'
+        'matplotlib',
+        'pandas'
     ]
 )

@@ -5,3 +5,4 @@ scikit-learn
 python-dateutil
 PyWavelets
 matplotlib
+pandas

@@ -1,9 +1,10 @@
 from .utilities import dictionary_to_array
 from .signal_processing import peak_detection, outlier_detectionIQR
-from .utilities import mapperLandmarksToCordinatesEDMA, mapperLandmarksToCordinatesMirrorError,mouth_ul_ll_to_rm_lm
+from .utilities import mapperLandmarksToCordinatesEDMA, mapperLandmarksToCordinatesMirrorError, mouth_ul_ll_to_rm_lm
 from scipy.spatial.distance import cdist
 import math
 import numpy as np
+import pandas as pd
 
 def _compute_edma_scores(**kwargs):
     """
@@ -72,7 +73,7 @@ def _compute_mirror_error(region_wise_mapped_cordinates, region_wise_mapped_cord
     return mirror_error_eye_brow,mirror_error_eye_region,mirror_error_mouth_region,mirror_error_overall
 
 
-def symmetryEDMA(landmarks,frames):
+def symmetryEDMA(landmarks, frames):
     """
     Calculate the symmetry scores for different facial regions based on landmark coordinates.
 
@@ -124,7 +125,7 @@ def symmetryEDMA(landmarks,frames):
     
 
 # Calculate symmetry scores using mirror error approach
-def symmetryMirrorError(Landmarks,frames):
+def symmetryMirrorError(Landmarks, frames):
     """
     Calculate the symmetry scores for different facial regions based on landmark coordinates using the mirror error approach.
 
@@ -185,6 +186,11 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
     num_signals = data.shape[1]
     
     expresivity_stats = []
+    # define dataframes for each scale
+    for s in range(num_scales):
+         # number of peaks, density (average across entire signal), mean (across peak activations), std, min, max
+        _data = pd.DataFrame(columns=['number', 'density', 'mean', 'std', 'min', 'max'])
+        expresivity_stats.append(_data)
     
     # for each signal
     for i in range(num_signals):
@@ -192,9 +198,6 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
         
         # detect peaks at multiple scales
         peaks = peak_detection(signal, num_scales=num_scales, fps=fps, smooth=True, noise_removal=False)
-        
-        # number of peaks, overall average (across entire signal), mean (across peak activations), std, min, max
-        results = np.zeros([num_scales, 6])
         
         for s in range(num_scales):
             _peaks = peaks[s, :]
@@ -219,7 +222,7 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
             # calculate the statistics
             if len(peaked_signal) == 0:
                 print("No peaks detected for signal %d at scale %d" % (i, s))
-                results[s, :] = [0, 0, 0, 0, 0, 0]
+                results = np.zeros(6)
             else:
                 _number = len(peaked_signal)
                 _average = peaked_signal.sum() / len(signal)
@@ -227,9 +230,9 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
                 _std = peaked_signal.std()
                 _min = peaked_signal.min()
                 _max = peaked_signal.max()
-                results[s, :] = [_number, _average, _mean, _std, _min, _max]
+                results = [_number, _average, _mean, _std, _min, _max]
         
-        expresivity_stats.append(results)
+            expresivity_stats[s].loc[i] = results
         
     return expresivity_stats
 
