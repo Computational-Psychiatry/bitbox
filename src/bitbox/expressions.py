@@ -1,183 +1,69 @@
-from .utilities import dictionary_to_array
+from .utilities import get_data_values
 from .signal_processing import peak_detection, outlier_detectionIQR
-from .utilities import mapperLandmarksToCordinatesEDMA, mapperLandmarksToCordinatesMirrorError, mouth_ul_ll_to_rm_lm
-from scipy.spatial.distance import cdist
-import math
+from .utilities import landmark_to_feature_mapper
 import numpy as np
 import pandas as pd
 
-def _compute_edma_scores(**kwargs):
-    """
-    Calculate the asymmetry score using Euclidean distance matrix based approach.
-
-    Args:
-        **kwargs: Keyword arguments containing the left_region and right_region.
-
-    Returns:
-        float: The asymmetry score.
-
-    Raises:
-        KeyError: If the left_region or right_region is not provided in the kwargs.
-
-    """
-    # Check if left_region and right_region are provided in kwargs
-    if "left_region" not in kwargs or "right_region" not in kwargs:
-        raise KeyError("left_region and right_region must be provided in kwargs")
-
-    # Extract the left and right regions from kwargs
-    left_region = kwargs["left_region"]
-    right_region = kwargs["right_region"]
-
-    # Calculate the distance matrices for the left and right regions
-    distance_matrix_left_region = cdist(left_region, left_region, 'sqeuclidean')
-    distance_matrix_right_region = cdist(right_region, right_region, 'sqeuclidean')
-    # Calculate the asymmetry score
-    if (math.sqrt(np.mean(distance_matrix_left_region))) >= (math.sqrt(np.mean(distance_matrix_right_region))):
-        asymmetry_score_region = (math.sqrt(np.mean(distance_matrix_left_region))) - (
-                math.sqrt(np.mean(distance_matrix_right_region)))
-    else:
-        asymmetry_score_region = (math.sqrt(np.mean(distance_matrix_right_region))) - (
-                math.sqrt(np.mean(distance_matrix_left_region)))
-
-    return asymmetry_score_region
-
-
-def _compute_mirror_error(region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse, region): 
-    """
-    Calculate the mirror error for each facial region.
-
-    Args:
-        region_wise_mapped_cordinates (dict): A dictionary containing the mapped coordinates for each facial region.
-        region_wise_mapped_cordinates_reverse (dict): A dictionary containing the reverse mapped coordinates for each facial region.
-        region (list): A list of facial regions.
-
-    Returns:
-        dict: A dictionary containing the mirror error scores for each facial region.
-
-    """
-    mirror_error_eye_brow = {}
-    mirror_error_eye_region = {}
-    mirror_error_mouth_region = {}
-    mirror_error_overall = {}
-    for frame_id,_ in zip(region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse):
-        mirror_error_per_frame = {}
-        for reg in region:
-            # Calculate the mirror error for each region
-            mirror_error_per_frame[reg] = np.mean(
-                np.linalg.norm(np.matrix(region_wise_mapped_cordinates_reverse[frame_id][reg]) - np.matrix(
-                  region_wise_mapped_cordinates[frame_id][reg]),ord=2,axis=1))
-        mirror_error_overall[frame_id] = mirror_error_per_frame["lb"] + mirror_error_per_frame["rb"] + mirror_error_per_frame["re"] + mirror_error_per_frame["le"] + mirror_error_per_frame["mo"]  #mirror_error_per_frame["ll"]  + mirror_error_per_frame["ul"]    
-        mirror_error_eye_brow[frame_id] = mirror_error_per_frame["lb"] + mirror_error_per_frame["rb"]
-        mirror_error_eye_region[frame_id] = mirror_error_per_frame["re"] + mirror_error_per_frame["le"]
-        mirror_error_mouth_region[frame_id] = mirror_error_per_frame["mo"]
-    return mirror_error_eye_brow,mirror_error_eye_region,mirror_error_mouth_region,mirror_error_overall
-
-
-def symmetryEDMA(landmarks, frames):
-    """
-    Calculate the symmetry scores for different facial regions based on landmark coordinates.
-
-    Args:
-        landmarks (dict): A dictionary containing the landmark coordinates for different facial regions.
-
-    Returns:
-        None
-
-    """
-    # Map landmarks to region-wise coordinates
-    region_wise_mapped_cordinates = mapperLandmarksToCordinatesEDMA(landmarks,frames)
-
-    # Calculate asymmetry scores for each facial region
-    eyebrow_region_scores = {}
-    eye_region_scores = {}
-    mouth_region_scores = {}
+# Calculate asymmetry scores using mirror error approach
+def asymmetry(landmarks):
+    # read actual values
+    data = get_data_values(landmarks)
+    # TODO: check if data is dictionary and have the right keys
+    # if not user should supply them as parameters
+    dimension = landmarks['dimension']
+    schema = landmarks['schema']
     
-
-    for frame in region_wise_mapped_cordinates:
-        # Calculate asymmetry score for eyebrow region
-        asymmetry_score_region_brow = _compute_edma_scores(left_region=region_wise_mapped_cordinates[frame]["lb"],
-                                                  right_region=region_wise_mapped_cordinates[frame]["rb"])
-        #eyebrow_region_scores[frame] = asymmetry_score_region_brow - 1
-        eyebrow_region_scores[frame] = asymmetry_score_region_brow 
-
-        # Calculate asymmetry score for eye region
-        asymmetry_score_region_eye = _compute_edma_scores(left_region=region_wise_mapped_cordinates[frame]["le"],
-                                                 right_region=region_wise_mapped_cordinates[frame]["re"])
-        #eye_region_scores[frame] = asymmetry_score_region_eye - 1
-        eye_region_scores[frame] = asymmetry_score_region_eye 
-
-        # Calculate asymmetry score for mouth region
-        lef_region_mouth, right_region_mouth = mouth_ul_ll_to_rm_lm(region_wise_mapped_cordinates[frame]["mo"])
-        asymmetry_score_region_mouth = _compute_edma_scores(left_region=lef_region_mouth, right_region=right_region_mouth)
-        #mouth_region_scores[frame] = asymmetry_score_region_mouth - 1
-        mouth_region_scores[frame] = asymmetry_score_region_mouth 
-
-    # Return the calculated asymmetry scores
-    dict_outcomes_edma = {
-        "eye_region_edma_scores": np.mean(list(eye_region_scores.values())),
-        "eyebrow_region_edma_scores": np.mean(list(eyebrow_region_scores.values())),
-        "mouth_region_edma_scores": np.mean(list(mouth_region_scores.values())),
-        "overall_edma_scores": np.mean(list(eye_region_scores.values())) + np.mean(
-            list(eyebrow_region_scores.values())) + np.mean(list(mouth_region_scores.values()))
-    }    
-    return dict_outcomes_edma
-
+    rel_ids = landmark_to_feature_mapper(schema=schema)
+    rel_ids_mirrored = landmark_to_feature_mapper(schema=schema+'_mirrored')
     
-
-# Calculate symmetry scores using mirror error approach
-def symmetryMirrorError(Landmarks, frames):
-    """
-    Calculate the symmetry scores for different facial regions based on landmark coordinates using the mirror error approach.
-
-    Args:
-        Landmarks (dict): A dictionary containing the landmark coordinates for different facial regions.
-
-    Returns:
-        dict: A dictionary containing the symmetry scores for each facial region.
-
-    """
-    # Map landmarks to region-wise coordinates using mirror error approach
-    region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse, region = mapperLandmarksToCordinatesMirrorError(
-        Landmarks,frames)
-    
-    # Calculate mirror error scores for each facial region
-    mirror_error_eye_brow, mirror_error_eye_region, mirror_error_mouth_region, mirror_error_overall = _compute_mirror_error(region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse,
-                                            region)
-    # Return the calculated mirror error scores
-    
-    dict_outcomes_mirror_error = {
-        "eye_region_mirror_error_scores": np.mean(list(mirror_error_eye_brow.values())),
-        "eyebrow_region_mirror_error_scores": np.mean(list(mirror_error_eye_region.values())),
-        "mouth_region_mirror_error_scores": np.mean(list(mirror_error_mouth_region.values())),
-        "overall_mirror_error_scores": np.mean(list(mirror_error_overall.values()))
+    feature_idx = {
+        'eye': rel_ids['le'],
+        'brow': rel_ids['lb'],
+        'nose': rel_ids['no'],
+        'mouth': np.concatenate((rel_ids['ul'], rel_ids['ll']))
     }
+    feature_idx_mirrored = {
+        'eye': rel_ids_mirrored['le'],
+        'brow': rel_ids_mirrored['lb'],
+        'nose': rel_ids_mirrored['no'],
+        'mouth': np.concatenate((rel_ids_mirrored['ul'], rel_ids_mirrored['ll']))
+    }
+
+    mirror_mx = np.eye(3)
+    mirror_mx[0,0] = -1
     
+    T = data.shape[0]
     
-    return dict_outcomes_mirror_error
+    # for each frame, compute asymmetry scores for each feature
+    asymmetry_scores = np.full((T, 5), np.nan)
+    for t in range(T):
+        coords = data[t, :]
+        
+        if len(coords) % dimension != 0:
+            raise ValueError(f"Landmarks are not {dimension} dimensional. Please set the correct dimension.")
+        
+        num_landmarks = int(len(coords) / dimension)
+        coords = coords.reshape((num_landmarks, dimension))
 
-def symmetry(landmarks, frames):
-    """
-    Calculate the symmetry scores for different facial regions based on landmark coordinates.
-
-    Args:
-        landmarks (dict): A dictionary containing the landmark coordinates for different facial regions.
-        frames (list or None): A list of frame numbers to process scores for specific frame numbers. If None, all frames are processed.
-
-    Returns:
-        tuple: A tuple containing two dictionaries. The first dictionary contains the symmetry scores based on the EDMA approach, and the second dictionary contains the symmetry scores based on the mirror error approach.
-
-    """
-    print("Calculating symmetry")
-    dict_scores_edma_asymmetry = symmetryEDMA(landmarks, frames)
-    dict_scores_mirror_error_asymmetry = symmetryMirrorError(landmarks, frames)
-    return dict_scores_edma_asymmetry, dict_scores_mirror_error_asymmetry
+        # Compute mirrored error for each feature
+        for i, feat in enumerate(feature_idx.keys()):
+            x = coords[feature_idx[feat], :]
+            y = coords[feature_idx_mirrored[feat], :]@mirror_mx
+            
+            score = np.mean(np.sqrt(np.sum((x-y)**2, axis=1)))
+            asymmetry_scores[t, i] = score
+        asymmetry_scores[t, 4] = np.mean(asymmetry_scores[t, 0:4])
+    
+    column_names = list(feature_idx.keys())+['overall']
+    asymmetry_scores = pd.DataFrame(data=asymmetry_scores, columns=column_names)
+             
+    return asymmetry_scores
 
 
 # use_negatives: whether to use negative peaks, 0: only positive peaks, 1: only negative peaks, 2: both
-def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=30):
-    # check if data is a dictionary
-    if isinstance(data, dict):
-        data = dictionary_to_array(data)
+def expressivity(activations, axis=0, use_negatives=0, num_scales=6, robust=True, fps=30):
+    # make sure data is in the right format
+    data = get_data_values(activations)
     
     # whether rows are time points (axis=0) or signals (axis=1)
     if axis == 1:

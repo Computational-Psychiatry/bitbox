@@ -4,14 +4,7 @@ from sklearn.impute import KNNImputer
 import os
 from sklearn.exceptions import ConvergenceWarning
 
-
-rel_ids = {'lb': np.array(list(range(0, 5))),
-             'rb': np.array(list(range(5, 10))),
-             'no': np.array(list(range(10, 19))),
-             'le': np.array(list(range(19, 25))),
-             're': np.array(list(range(25, 31))),
-             'ul': np.array(list(range(31, 37))+list(range(43, 47))),
-             'll': np.array(list(range(37, 43))+list(range(47, 51)))}
+from ..utilities import landmark_to_feature_mapper
 
 def save_shape_and_texture(alpha, beta, sdir, shp_path, tex_path):
         IX  = np.loadtxt('%s/IX.dat' % sdir)
@@ -242,6 +235,8 @@ def compute_localized_expressions(model_path, smooth_expression_file, local_exp_
     # but only for absolute expressions. It needs to be adapted to the case where
     # basis_set['use_abs'] is set to False!
     assert basis_set['use_abs']
+    
+    rel_ids = landmark_to_feature_mapper(scheme='ibug51')
 
     li = np.loadtxt(f'{sdir}/li.dat').astype(int)
     

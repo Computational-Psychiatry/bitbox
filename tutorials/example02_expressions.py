@@ -1,7 +1,6 @@
 from bitbox.face_backend import FaceProcessor3DI
 from bitbox.signal_processing import peak_detection
-from bitbox.coordination import intra_person_coordination
-from bitbox.expressions import expressivity
+from bitbox.expressions import expressivity, asymmetry
 
 import os
 import numpy as np
@@ -26,7 +25,7 @@ rect, land, exp_global, pose, land_can, exp_local = processor.run_all(normalize=
 # Detect peaks and visualize them in one of the expression bases
 
 # get local expressions as a numpy array
-data = np.array(list(exp_local['data'].values())).astype('float')
+data = exp_local['data'].values
 
 # select the expression bases we are intrested in
 expression = data[:, 13]
@@ -39,3 +38,6 @@ peaks = peak_detection(expression, num_scales=6, fps=30, smooth=True, visualize=
 
 # calculate expressivity
 expressivity_stats = expressivity(exp_local, use_negatives=0, num_scales=6, robust=True, fps=30)
+
+#%% Task 3: Asymmetry of the facial expressions
+asymmetry_scores = asymmetry(land_can)

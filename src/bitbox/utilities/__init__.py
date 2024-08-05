@@ -1,3 +1,3 @@
 from .caching import FileCache
-from .file_types import dictionary_to_array
-from .symmetry_utilities  import mapperLandmarksToCordinatesEDMA, mapperLandmarksToCordinatesMirrorError,mouth_ul_ll_to_rm_lm
+from .file_types import get_data_values
+from .landmarks import landmark_to_feature_mapper

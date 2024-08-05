@@ -1,13 +1,12 @@
 from .signal_processing import  windowed_cross_correlation, windowed_cross_correlation_2S
-from .utilities import dictionary_to_array
+from .utilities import get_data_values
 
 import numpy as np
 
 
 def intra_person_coordination(data, axis=0, width=0.5, lag=None, step=None, fps=30):
-    # check if data is a dictionary
-    if isinstance(data, dict):
-        data = dictionary_to_array(data)
+    # make sure data is in the right format
+    data = get_data_values(data)
     
     # whether rows are time points (axis=0) or signals (axis=1)
     if axis == 1:
@@ -34,9 +33,8 @@ def intra_person_coordination(data, axis=0, width=0.5, lag=None, step=None, fps=
 
 
 def intra_person_coordination_2S(data, axis=0, width=0.5, lag=None, step=None, fps=30, ordinal=False):
-    # check if data is a dictionary
-    if isinstance(data, dict):
-        data = dictionary_to_array(data)
+    # make sure data is in the right format
+    data = get_data_values(data)
     
     # whether rows are time points (axis=0) or signals (axis=1)
     if axis == 1:
