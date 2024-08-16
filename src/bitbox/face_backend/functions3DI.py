@@ -236,7 +236,7 @@ def compute_localized_expressions(model_path, smooth_expression_file, local_exp_
     # basis_set['use_abs'] is set to False!
     assert basis_set['use_abs']
     
-    rel_ids = landmark_to_feature_mapper(scheme='ibug51')
+    rel_ids = landmark_to_feature_mapper(schema='ibug51')
 
     li = np.loadtxt(f'{sdir}/li.dat').astype(int)
     
