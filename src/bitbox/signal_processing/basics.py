@@ -44,3 +44,11 @@ def outlier_detectionIQR(data):
     outliers = np.where((data < lower_bound) | (data > upper_bound))[0]
     
     return outliers
+
+def log_transform(prob, base=2):
+    log_prob = np.zeros_like(prob)
+    log_prob[prob>0] = np.log(prob[prob>0]) / np.log(base) 
+    log_prob[np.isinf(log_prob)] = 0
+    log_prob[np.isnan(log_prob)] = 0
+    
+    return log_prob

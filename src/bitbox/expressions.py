@@ -1,183 +1,73 @@
-from .utilities import dictionary_to_array
-from .signal_processing import peak_detection, outlier_detectionIQR
-from .utilities import mapperLandmarksToCordinatesEDMA, mapperLandmarksToCordinatesMirrorError, mouth_ul_ll_to_rm_lm
-from scipy.spatial.distance import cdist
-import math
+from .utilities import get_data_values
+from .signal_processing import peak_detection, outlier_detectionIQR, log_transform
+from .utilities import landmark_to_feature_mapper
 import numpy as np
 import pandas as pd
 
-def _compute_edma_scores(**kwargs):
-    """
-    Calculate the asymmetry score using Euclidean distance matrix based approach.
-
-    Args:
-        **kwargs: Keyword arguments containing the left_region and right_region.
-
-    Returns:
-        float: The asymmetry score.
-
-    Raises:
-        KeyError: If the left_region or right_region is not provided in the kwargs.
-
-    """
-    # Check if left_region and right_region are provided in kwargs
-    if "left_region" not in kwargs or "right_region" not in kwargs:
-        raise KeyError("left_region and right_region must be provided in kwargs")
-
-    # Extract the left and right regions from kwargs
-    left_region = kwargs["left_region"]
-    right_region = kwargs["right_region"]
-
-    # Calculate the distance matrices for the left and right regions
-    distance_matrix_left_region = cdist(left_region, left_region, 'sqeuclidean')
-    distance_matrix_right_region = cdist(right_region, right_region, 'sqeuclidean')
-    # Calculate the asymmetry score
-    if (math.sqrt(np.mean(distance_matrix_left_region))) >= (math.sqrt(np.mean(distance_matrix_right_region))):
-        asymmetry_score_region = (math.sqrt(np.mean(distance_matrix_left_region))) - (
-                math.sqrt(np.mean(distance_matrix_right_region)))
-    else:
-        asymmetry_score_region = (math.sqrt(np.mean(distance_matrix_right_region))) - (
-                math.sqrt(np.mean(distance_matrix_left_region)))
-
-    return asymmetry_score_region
-
-
-def _compute_mirror_error(region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse, region): 
-    """
-    Calculate the mirror error for each facial region.
-
-    Args:
-        region_wise_mapped_cordinates (dict): A dictionary containing the mapped coordinates for each facial region.
-        region_wise_mapped_cordinates_reverse (dict): A dictionary containing the reverse mapped coordinates for each facial region.
-        region (list): A list of facial regions.
-
-    Returns:
-        dict: A dictionary containing the mirror error scores for each facial region.
-
-    """
-    mirror_error_eye_brow = {}
-    mirror_error_eye_region = {}
-    mirror_error_mouth_region = {}
-    mirror_error_overall = {}
-    for frame_id,_ in zip(region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse):
-        mirror_error_per_frame = {}
-        for reg in region:
-            # Calculate the mirror error for each region
-            mirror_error_per_frame[reg] = np.mean(
-                np.linalg.norm(np.matrix(region_wise_mapped_cordinates_reverse[frame_id][reg]) - np.matrix(
-                  region_wise_mapped_cordinates[frame_id][reg]),ord=2,axis=1))
-        mirror_error_overall[frame_id] = mirror_error_per_frame["lb"] + mirror_error_per_frame["rb"] + mirror_error_per_frame["re"] + mirror_error_per_frame["le"] + mirror_error_per_frame["mo"]  #mirror_error_per_frame["ll"]  + mirror_error_per_frame["ul"]    
-        mirror_error_eye_brow[frame_id] = mirror_error_per_frame["lb"] + mirror_error_per_frame["rb"]
-        mirror_error_eye_region[frame_id] = mirror_error_per_frame["re"] + mirror_error_per_frame["le"]
-        mirror_error_mouth_region[frame_id] = mirror_error_per_frame["mo"]
-    return mirror_error_eye_brow,mirror_error_eye_region,mirror_error_mouth_region,mirror_error_overall
-
-
-def symmetryEDMA(landmarks, frames):
-    """
-    Calculate the symmetry scores for different facial regions based on landmark coordinates.
-
-    Args:
-        landmarks (dict): A dictionary containing the landmark coordinates for different facial regions.
-
-    Returns:
-        None
-
-    """
-    # Map landmarks to region-wise coordinates
-    region_wise_mapped_cordinates = mapperLandmarksToCordinatesEDMA(landmarks,frames)
-
-    # Calculate asymmetry scores for each facial region
-    eyebrow_region_scores = {}
-    eye_region_scores = {}
-    mouth_region_scores = {}
+# Calculate asymmetry scores using mirror error approach
+def asymmetry(landmarks, axis=0):
+    # read actual values
+    data = get_data_values(landmarks)
     
-
-    for frame in region_wise_mapped_cordinates:
-        # Calculate asymmetry score for eyebrow region
-        asymmetry_score_region_brow = _compute_edma_scores(left_region=region_wise_mapped_cordinates[frame]["lb"],
-                                                  right_region=region_wise_mapped_cordinates[frame]["rb"])
-        #eyebrow_region_scores[frame] = asymmetry_score_region_brow - 1
-        eyebrow_region_scores[frame] = asymmetry_score_region_brow 
-
-        # Calculate asymmetry score for eye region
-        asymmetry_score_region_eye = _compute_edma_scores(left_region=region_wise_mapped_cordinates[frame]["le"],
-                                                 right_region=region_wise_mapped_cordinates[frame]["re"])
-        #eye_region_scores[frame] = asymmetry_score_region_eye - 1
-        eye_region_scores[frame] = asymmetry_score_region_eye 
-
-        # Calculate asymmetry score for mouth region
-        lef_region_mouth, right_region_mouth = mouth_ul_ll_to_rm_lm(region_wise_mapped_cordinates[frame]["mo"])
-        asymmetry_score_region_mouth = _compute_edma_scores(left_region=lef_region_mouth, right_region=right_region_mouth)
-        #mouth_region_scores[frame] = asymmetry_score_region_mouth - 1
-        mouth_region_scores[frame] = asymmetry_score_region_mouth 
-
-    # Return the calculated asymmetry scores
-    dict_outcomes_edma = {
-        "eye_region_edma_scores": np.mean(list(eye_region_scores.values())),
-        "eyebrow_region_edma_scores": np.mean(list(eyebrow_region_scores.values())),
-        "mouth_region_edma_scores": np.mean(list(mouth_region_scores.values())),
-        "overall_edma_scores": np.mean(list(eye_region_scores.values())) + np.mean(
-            list(eyebrow_region_scores.values())) + np.mean(list(mouth_region_scores.values()))
-    }    
-    return dict_outcomes_edma
-
+    # whether rows are time points (axis=0) or signals (axis=1)
+    if axis == 1:
+        data = data.T
     
-
-# Calculate symmetry scores using mirror error approach
-def symmetryMirrorError(Landmarks, frames):
-    """
-    Calculate the symmetry scores for different facial regions based on landmark coordinates using the mirror error approach.
-
-    Args:
-        Landmarks (dict): A dictionary containing the landmark coordinates for different facial regions.
-
-    Returns:
-        dict: A dictionary containing the symmetry scores for each facial region.
-
-    """
-    # Map landmarks to region-wise coordinates using mirror error approach
-    region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse, region = mapperLandmarksToCordinatesMirrorError(
-        Landmarks,frames)
+    dimension = landmarks['dimension']
+    schema = landmarks['schema']
     
-    # Calculate mirror error scores for each facial region
-    mirror_error_eye_brow, mirror_error_eye_region, mirror_error_mouth_region, mirror_error_overall = _compute_mirror_error(region_wise_mapped_cordinates, region_wise_mapped_cordinates_reverse,
-                                            region)
-    # Return the calculated mirror error scores
+    rel_ids = landmark_to_feature_mapper(schema=schema)
+    rel_ids_mirrored = landmark_to_feature_mapper(schema=schema+'_mirrored')
     
-    dict_outcomes_mirror_error = {
-        "eye_region_mirror_error_scores": np.mean(list(mirror_error_eye_brow.values())),
-        "eyebrow_region_mirror_error_scores": np.mean(list(mirror_error_eye_region.values())),
-        "mouth_region_mirror_error_scores": np.mean(list(mirror_error_mouth_region.values())),
-        "overall_mirror_error_scores": np.mean(list(mirror_error_overall.values()))
+    feature_idx = {
+        'eye': rel_ids['le'],
+        'brow': rel_ids['lb'],
+        'nose': rel_ids['no'],
+        'mouth': np.concatenate((rel_ids['ul'], rel_ids['ll']))
     }
+    feature_idx_mirrored = {
+        'eye': rel_ids_mirrored['le'],
+        'brow': rel_ids_mirrored['lb'],
+        'nose': rel_ids_mirrored['no'],
+        'mouth': np.concatenate((rel_ids_mirrored['ul'], rel_ids_mirrored['ll']))
+    }
+
+    mirror_mx = np.eye(dimension)
+    mirror_mx[0,0] = -1
     
+    T = data.shape[0]
     
-    return dict_outcomes_mirror_error
+    # for each frame, compute asymmetry scores for each feature
+    asymmetry_scores = np.full((T, len(feature_idx.keys())+1), np.nan)
+    
+    for t in range(T):
+        coords = data[t, :]
+        
+        if len(coords) % dimension != 0:
+            raise ValueError(f"Landmarks are not {dimension} dimensional. Please set the correct dimension.")
+        
+        num_landmarks = int(len(coords) / dimension)
+        coords = coords.reshape((num_landmarks, dimension))
 
-def symmetry(landmarks, frames):
-    """
-    Calculate the symmetry scores for different facial regions based on landmark coordinates.
-
-    Args:
-        landmarks (dict): A dictionary containing the landmark coordinates for different facial regions.
-        frames (list or None): A list of frame numbers to process scores for specific frame numbers. If None, all frames are processed.
-
-    Returns:
-        tuple: A tuple containing two dictionaries. The first dictionary contains the symmetry scores based on the EDMA approach, and the second dictionary contains the symmetry scores based on the mirror error approach.
-
-    """
-    print("Calculating symmetry")
-    dict_scores_edma_asymmetry = symmetryEDMA(landmarks, frames)
-    dict_scores_mirror_error_asymmetry = symmetryMirrorError(landmarks, frames)
-    return dict_scores_edma_asymmetry, dict_scores_mirror_error_asymmetry
+        # Compute mirrored error for each feature
+        for i, feat in enumerate(feature_idx.keys()):
+            x = coords[feature_idx[feat], :]
+            y = coords[feature_idx_mirrored[feat], :]@mirror_mx
+            
+            score = np.mean(np.sqrt(np.sum((x-y)**2, axis=1)))
+            asymmetry_scores[t, i] = score
+        asymmetry_scores[t, -1] = np.mean(asymmetry_scores[t, 0:-1])
+    
+    column_names = list(feature_idx.keys())+['overall']
+    asymmetry_scores = pd.DataFrame(data=asymmetry_scores, columns=column_names)
+             
+    return asymmetry_scores
 
 
 # use_negatives: whether to use negative peaks, 0: only positive peaks, 1: only negative peaks, 2: both
-def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=30):
-    # check if data is a dictionary
-    if isinstance(data, dict):
-        data = dictionary_to_array(data)
+def expressivity(activations, axis=0, use_negatives=0, num_scales=6, robust=True, fps=30):
+    # make sure data is in the right format
+    data = get_data_values(activations)
     
     # whether rows are time points (axis=0) or signals (axis=1)
     if axis == 1:
@@ -225,18 +115,121 @@ def expressivity(data, axis=0, use_negatives=0, num_scales=6, robust=True, fps=3
                 results = np.zeros(6)
             else:
                 _number = len(peaked_signal)
-                _average = peaked_signal.sum() / len(signal)
+                _density = peaked_signal.sum() / len(signal)
                 _mean = peaked_signal.mean()
                 _std = peaked_signal.std()
                 _min = peaked_signal.min()
                 _max = peaked_signal.max()
-                results = [_number, _average, _mean, _std, _min, _max]
+                results = [_number, _density, _mean, _std, _min, _max]
         
             expresivity_stats[s].loc[i] = results
         
     return expresivity_stats
 
 
-def diversity(landmarks):
-    print("Calculating diversity")
+def diversity(activations, axis=0, use_negatives=0, num_scales=6, robust=True, fps=30):
+    # make sure data is in the right format
+    data = get_data_values(activations)
     
+    # whether rows are time points (axis=0) or signals (axis=1)
+    if axis == 1:
+        data = data.T
+        
+    num_frames, num_signals = data.shape
+    
+    #STEP 1: Detect peaks at multiple scales
+    #---------------------------------------
+
+    # peak data will have shape (num_scales, num_frames, num_signals)
+    # we will compute diversity for pos and neg separately and take the average
+    data_peaked_pos = [0] * num_scales
+    data_peaked_neg = [0] * num_scales
+    for s in range(num_scales):
+        data_peaked_pos[s] = np.zeros((num_frames, num_signals))
+        data_peaked_neg[s] = np.zeros((num_frames, num_signals))
+
+    for i in range(num_signals):
+        signal = data[:, i]
+        
+        # detect peaks at multiple scales
+        peaks = peak_detection(signal, num_scales=num_scales, fps=fps, smooth=True, noise_removal=False)
+        
+        for s in range(num_scales):
+            _peaks = peaks[s, :]
+            
+            # whether we use negative peaks or not
+            if use_negatives == 0: # only use positives
+                _peaks[_peaks==-1] = 0
+            elif use_negatives == 1: # only use negatives
+                _peaks[_peaks==1] = 0
+            
+            # if robust, we only consider inliers (removing outliers)
+            idx = np.where(_peaks!=0)[0]
+            if robust and len(idx) > 5:
+                outliers = outlier_detectionIQR(signal[idx])
+                idx = np.delete(idx, outliers)
+            tmp = _peaks[idx]
+            _peaks[:] = 0
+            _peaks[idx] = tmp
+            
+            # store the peaked signal
+            signal_pos = np.zeros_like(signal)
+            signal_pos[_peaks==1] = signal[_peaks==1]
+            signal_neg = np.zeros_like(signal)
+            signal_neg[_peaks==-1] = signal[_peaks==-1]
+            
+            data_peaked_pos[s][:, i] = signal_pos
+            data_peaked_neg[s][:, i] = signal_neg
+            
+    #STEP 2: Compute diversity at each scale
+    #---------------------------------------
+    diversity = pd.DataFrame(index=range(num_scales), columns=['overall', 'frame_wise'])
+    for s in range(num_scales):
+        
+        data_final = []
+        if use_negatives == 0: # only use positives
+            data_final = [data_peaked_pos[s]]
+        elif use_negatives == 1: # only use negatives
+            data_final = [data_peaked_neg[s]]
+        elif use_negatives == 2: # use both
+            data_final = [data_peaked_pos[s], data_peaked_neg[s]]
+        else:
+            raise ValueError("Invalid value for use_negatives")
+        
+        # compute entropy for pos and neg separately and take the average
+        entropy = 0
+        entropy_frame = 0
+        for data_peaked in data_final:            
+            #TODO: make sure each signal has the same range. Otherwise, we need to normalize the probabilities
+            
+            base = num_signals#2
+            
+            # type 1: compute for the entire time period
+            prob = np.abs(data_peaked).sum(axis=0)
+            normalizer = prob.sum()
+            if normalizer > 0:
+                prob /= normalizer
+            
+            log_prob = log_transform(prob, base)
+            
+            # type 2: compute for each frame separately and take the average
+            prob_frame = np.zeros_like(data_peaked)
+            for f in range(num_frames):
+                normalizer = np.abs(data_peaked[f, :]).sum()
+                if normalizer > 0:
+                    prob_frame[f, :] = np.abs(data_peaked[f, :]) / normalizer
+            prob_frame[np.isinf(prob_frame)] = 0
+            prob_frame[np.isnan(prob_frame)] = 0
+            
+            log_prob_frame = log_transform(prob_frame, base)
+            
+            entropy += -1 * np.sum(prob * log_prob)
+            entropy_frame += -1 * np.sum(prob_frame * log_prob_frame, axis=1)
+            
+        entropy /= len(data_final)
+        entropy_frame /= len(data_final)
+        
+        diversity.loc[s, :] = [entropy, entropy_frame.mean()]
+    
+    return diversity
+            
