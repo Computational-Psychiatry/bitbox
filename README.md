@@ -6,13 +6,32 @@ Please refer to our [Wiki](https://github.com/Computational-Psychiatry/bitbox/wi
 
 ## Installation
 
-Before installing Bitbox, you need to install 3DI. If 3DI is not installed, you will receive an error when trying to use Bitbox. 3DI repository is located at [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). You will need to use python 3.8 or higher. 
+Bitbox itself has minimum requirements, but it relies on face/body backends to generate expression/movement signals. These backends usually have more requirements. We highly recommend using our Docker images to install these backends as installing them from source code may prove difficult for some. 
 
-To install Bitbox, follow these steps:
+### Installing Face Backends 
+
+The current version of Bitbox supports two face backends, namely 3DI and 3DI-lite, for systems with and without GPU supports, respectively. While 3DI-lite is easier to install, faster, and in some cases, more robust to occlusions, etc., we recommend using 3DI as it is a more generic algorithm, and it may have higher reliability and validity with most videos/images. Nevertheless, if you cannot use NVIDIA GPUs, for example, if you are working on a Mac or a system with AMD GPUs, you need to use 3DI-lite.
+
+If you can install C++/CUDA codes from the source code, please go ahead and install 3DI from [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). The instructions are provided there. This approach will install the 3DI as a native application on your system and will be more convenient for using Bitbox.
+
+Similarly, 3DI-lite can be installed from ... (COMING SOON)
+
+The recommended way to install backends is to use our Docker images. Using Docker is usually very straightforward; however, 3DI requires downloading an external face model (you need to register individually and request access) and updating our image with this model. Thus, there are a few extra steps you need to do. We provide two options for this.
+
+#### Using Docker: Option 1 
+
+... (COMING SOON)
+
+#### Using Docker: Option 2 
+
+... (COMING SOON)
+
+### Installing Bitbox
+To install Bitbox, follow these steps. **You will need to use python 3.8 or higher**. 
 
 1. Create a virtual environment and activate it:
     ```bash
-    python3 -m venv env
+    python3.8 -m venv env
     source env/bin/activate
     ```
     Note that this will create a virtual environment named `env` in the current directory. You can use any name, and you can install the virtual environment anywhere you like. Just don't forget where you installed it. For the following steps, we will assume you have activated the virtual environment.
@@ -57,5 +76,42 @@ To install Bitbox, follow these steps:
 
 Now you are ready to use Bitbox!
 
+## Use
 
+Once you are done with installation, you can use Bitbox by
+
+1. Activate the virtual environment you created for Bitbox:
+    ```bash
+    source env/bin/activate
+    ```
+2. Set the environment variable `PATH_3DI`. You need to do this only if you did not set it in .bahsrc (on Lunux/Mac) or in System's Environment Variables (on Windows). If you did that you can skip this step.
+
+3. Import the library in your Python code:
+ ```python
+from bitbox.face_backend import FaceProcessor3DI
+import os
+
+# Please make sure you give the correct full (not relative) path
+DIR = '/path/to/tutorials'
+input_file = os.path.join(DIR, 'data/elaine.mp4') 
+output_dir = os.path.join(DIR, 'output')
+
+# define a face processor
+processor = FaceProcessor3DI()
+
+# set input and output
+processor.io(input_file=input_file, output_dir=output_dir)
+
+# detect faces
+rects = processor.detect_faces()
+
+# detect landmarks
+lands = processor.detect_landmarks()
+
+# compute global expressions
+exp_global, pose, lands_can = processor.fit()
+
+# compute localized expressions
+exp_local = processor.localized_expressions()
+ ```
 
