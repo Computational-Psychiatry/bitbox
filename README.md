@@ -6,9 +6,28 @@ Please refer to our [Wiki](https://github.com/Computational-Psychiatry/bitbox/wi
 
 ## Installation
 
-Before installing Bitbox, you need to install 3DI. If 3DI is not installed, you will receive an error when trying to use Bitbox. 3DI repository is located at [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). **You will need to use python 3.8 or higher**. 
+Bitbox itself has minimum requirements, but it relies on face/body backends to generate expression/movement signals. These backends usually have more requirements. We highly recommend using our Docker images to install these backends as installing them from source code may prove difficult for some. 
 
-To install Bitbox, follow these steps:
+### Installing Face Backends 
+
+The current version of Bitbox supports two face backends, namely 3DI and 3DI-lite, for systems with and without GPU supports, respectively. While 3DI-lite is easier to install, faster, and in some cases, more robust to occlusions, etc., we recommend using 3DI as it is a more generic algorithm, and it may have higher reliability and validity with most videos/images. Nevertheless, if you cannot use NVIDIA GPUs, for example, if you are working on a Mac or a system with AMD GPUs, you need to use 3DI-lite.
+
+If you can install C++/CUDA codes from the source code, please go ahead and install 3DI from [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). The instructions are provided there. This approach will install the 3DI as a native application on your system and will be more convenient for using Bitbox.
+
+Similarly, 3DI-lite can be installed from ... (COMING SOON)
+
+The recommended way to install backends is to use our Docker images. Using Docker is usually very straightforward; however, 3DI requires downloading an external face model (you need to register individually and request access) and updating our image with this model. Thus, there are a few extra steps you need to do. We provide two options for this.
+
+#### Using Docker: Option 1 
+
+... (COMING SOON)
+
+#### Using Docker: Option 2 
+
+... (COMING SOON)
+
+### Installing Bitbox
+To install Bitbox, follow these steps. **You will need to use python 3.8 or higher**. 
 
 1. Create a virtual environment and activate it:
     ```bash
