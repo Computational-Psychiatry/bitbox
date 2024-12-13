@@ -7,23 +7,21 @@ from time import time
 
 from ..utilities import FileCache
 
-from .functions3DI import save_shape_and_texture
-from .functions3DI import total_variance_rec, total_variance_rec_pose
-from .functions3DI import compute_canonicalized_landmarks, compute_localized_expressions
-
 from .reader3DI import read_rectangles, read_landmarks
 from .reader3DI import read_pose, read_expression, read_canonical_landmarks
 
 class FaceProcessor3DI:
-    def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', fast=False, return_output=True):
+    def __init__(self, camera_model=30, landmark_model='global4', morphable_model='BFMmm-19830', basis_model='0.0.1.F591-cd-K32d', fast=False, return_output=True):
         self.file_input = None
         self.dir_output = None
         self.execDIR = None
+        self.use_docker = False
         self.base_metadata = None
         
         self.model_camera = camera_model
         self.model_morphable = morphable_model
         self.model_landmark = landmark_model
+        self.model_basis = basis_model
         self.fast = fast
         
         self.cache = FileCache()
@@ -31,27 +29,34 @@ class FaceProcessor3DI:
         self.return_output = return_output
         
         # find out where 3DI package is installed
-        if os.environ.get('PATH_3DI'):
-            execDIRs = [os.environ.get('PATH_3DI')]
+        if os.environ.get('DOCKER_3DI'):
+            warnings.warn("Using 3DI package inside a Docker container.")
+            self.use_docker = True
+            self.execDIR = '/app/build'
+            self.docker = os.environ.get('PATH_3DI')
         else:
-            warnings.warn("PATH_3DI environment variable is not set. Using default system PATH.")
-            execDIRs = os.environ.get('PATH')
-            if ';' in execDIRs:  # Windows
-                execDIRs = execDIRs.split(';')
-            else:  # Unix-like systems (Linux, macOS)
-                execDIRs = execDIRs.split(':')
-                
-        for d in execDIRs:
-            if os.path.exists(os.path.join(d, 'video_learn_identity')):
-                self.execDIR = d
-                break
+            if os.environ.get('PATH_3DI'):
+                execDIRs = [os.environ.get('PATH_3DI')]
+            else:
+                warnings.warn("PATH_3DI environment variable is not set. Using default system PATH.")
+                execDIRs = os.environ.get('PATH')
+                if ';' in execDIRs:  # Windows
+                    execDIRs = execDIRs.split(';')
+                else:  # Unix-like systems (Linux, macOS)
+                    execDIRs = execDIRs.split(':')
+                    
+            for d in execDIRs:
+                if os.path.exists(os.path.join(d, 'video_learn_identity')):
+                    self.execDIR = d
+                    break
             
         if self.execDIR is None:
             raise ValueError("3DI package is not found. Please make sure you defined PATH_3DI system variable.")
         
-        # set the working directory
-        # @TODO: remove this line when the 3DI code is updated by Vangelis
-        os.chdir(self.execDIR)
+        if not self.use_docker:
+            # set the working directory
+            # @TODO: remove this line when the 3DI code is updated by Vangelis
+            os.chdir(self.execDIR)
         
         # prepare configuration files
         if self.fast:
@@ -59,37 +64,19 @@ class FaceProcessor3DI:
         else:
             cfgid = 1
         
-        self.config_landmarks = os.path.join(self.execDIR, 'configs/%s.cfg%d.%s.txt' % (self.model_morphable, cfgid, self.model_landmark))
-    
-    
-    def _shape_and_texture(self, shp_path, tex_path):
-        alpha = np.loadtxt(self.file_shape_coeff)
-        beta =  0.4*np.loadtxt(self.file_texture_coeff)
-        sdir = os.path.join(self.execDIR, 'models/MMs/%s' % self.model_morphable)
-        
-        save_shape_and_texture(alpha, beta, sdir, shp_path, tex_path)
-    
-    
-    def _smooth_expression(self, exp_path, exp_path_new):
-        total_variance_rec(self.execDIR, exp_path, exp_path_new, self.model_morphable)
-    
-    
-    def _smooth_pose(self, pose_path, pose_path_new):
-        total_variance_rec_pose(pose_path, pose_path_new)
-        
-    
-    def _canonicalized_landmarks(self, exp_path, exp_path_new):
-        compute_canonicalized_landmarks(self.execDIR, exp_path, exp_path_new, self.model_morphable)
-    
-    
-    def _local_expressions(self, land_path, normalize, exp_path):
-        compute_localized_expressions(self.execDIR, land_path, exp_path, self.model_morphable, normalize)
-    
+        self.config_landmarks = os.path.join(self.execDIR, 'configs/%s.cfg%d.%s.txt' % (self.model_morphable, cfgid, self.model_landmark)) 
+                
     
     def _run_command(self, executable, parameters, output_file_idx, system_call):                  
-        if system_call: # if we are using system call
-            # prepare the command
-            cmd = os.path.join(self.execDIR, executable)
+        if system_call: # if we are using system call          
+            # executable
+            if self.use_docker: # check if we are using a docker container
+                input_dir = os.path.dirname(self.file_input)
+                cmd = f"docker run --rm -v {input_dir}:{input_dir} -v {self.dir_output}:{self.dir_output} -w /app/build {self.docker} {executable}"
+            else:
+                cmd = os.path.join(self.execDIR, executable)
+            
+            # parameters
             for p in parameters:
                 if p is None:
                     raise ValueError("File names are not set correctly. Please use io() method prior to running any processing.")
@@ -107,6 +94,7 @@ class FaceProcessor3DI:
             func(*parameters)
             
         return cmd
+    
     
     def _execute(self, executable, parameters, name, output_file_idx=-1, system_call=True):
         status = False
@@ -212,7 +200,7 @@ class FaceProcessor3DI:
         self.file_illumination  = os.path.join(self.dir_output, self.file_input_base + '_illumination.3DI') # illumination coefficients
         self.file_expression_smooth = os.path.join(self.dir_output, self.file_input_base + '_expression_smooth.3DI') # smoothed expression coefficients
         self.file_pose_smooth = os.path.join(self.dir_output, self.file_input_base + '_pose_smooth.3DI') # smoothed pose info
-        self.file_landmarks_cannonicalized = os.path.join(self.dir_output, self.file_input_base + '_landmarks_cannonicalized.3DI') # canonicalized landmarks
+        self.file_landmarks_canonicalized = os.path.join(self.dir_output, self.file_input_base + '_landmarks_canonicalized.3DI') # canonicalized landmarks
         self.file_expression_localized = os.path.join(self.dir_output, self.file_input_base + '_expression_localized.3DI') # localized expressions
                
         
@@ -270,11 +258,11 @@ class FaceProcessor3DI:
                       output_file_idx=[-2, -1])
      
         # STEP 2: shape and texture model
-        self._execute('_shape_and_texture',
-                      [self.file_shape, self.file_texture],
+        print("running script")
+        self._execute('scripts/save_identity_and_shape.py',
+                      [self.file_shape_coeff, self.file_texture_coeff, '1', '0.4', self.file_shape, self.file_texture, self.model_morphable],
                       "shape and texture model",
-                      output_file_idx=[-2, -1],
-                      system_call=False)
+                      output_file_idx=[-3, -2])
 
         # STEP 3: Pose and expression
         self._execute('video_from_saved_identity',
@@ -283,27 +271,24 @@ class FaceProcessor3DI:
                       output_file_idx=[-3, -2, -1])
 
         # STEP 4: Smooth expression and pose
-        self._execute('_smooth_expression',
-                    [self.file_expression, self.file_expression_smooth],
+        self._execute('scripts/total_variance_rec.py',
+                    [self.file_expression, self.file_expression_smooth, self.model_morphable],
                     "expression smoothing",
-                    output_file_idx=-1,
-                    system_call=False)
-        
-        self._execute('_smooth_pose',
+                    output_file_idx=-2)
+                
+        self._execute('scripts/total_variance_rec_pose.py',
                     [self.file_pose, self.file_pose_smooth],
                     "pose smoothing",
-                    output_file_idx=-1,
-                    system_call=False)
+                    output_file_idx=-1)
             
         # STEP 5: Canonicalized landmarks
-        self._execute('_canonicalized_landmarks',
-                    [self.file_expression_smooth, self.file_landmarks_cannonicalized],
+        self._execute('scripts/produce_canonicalized_3Dlandmarks.py',
+                    [self.file_expression_smooth, self.file_landmarks_canonicalized, self.model_morphable],
                     "canonicalized landmark estimation",
-                    output_file_idx=-1,
-                    system_call=False)
+                    output_file_idx=-2)
         
         if self.return_output:
-            return read_expression(self.file_expression_smooth), read_pose(self.file_pose_smooth), read_canonical_landmarks(self.file_landmarks_cannonicalized)
+            return read_expression(self.file_expression_smooth), read_pose(self.file_pose_smooth), read_canonical_landmarks(self.file_landmarks_canonicalized)
         else:
             return None, None, None
         
@@ -313,11 +298,10 @@ class FaceProcessor3DI:
         if self.cache.check_file(self.file_expression_smooth, self.base_metadata) > 0:
             raise ValueError("Expression quantification is not run or failed. Please run fit() method first.")
         
-        self._execute('_local_expressions',
-                    [self.file_expression_smooth, normalize, self.file_expression_localized],
+        self._execute('scripts/compute_local_exp_coefficients.py',
+                    [self.file_expression_smooth, self.file_expression_localized, self.model_morphable, self.model_basis, int(normalize)],
                     "localized expression estimation",
-                    output_file_idx=-1,
-                    system_call=False)
+                    output_file_idx=-4)
         
         if self.return_output:
             return read_expression(self.file_expression_localized)

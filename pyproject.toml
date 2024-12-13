@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bitbox"
-version = "2024.03dev2"
+version = "2024.12dev"
 authors = [
   { name="ComPsy Group", email="tuncb@chop.edu" },
 ]
@@ -26,7 +26,7 @@ dependencies = [
     'pandas'
 ]
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
