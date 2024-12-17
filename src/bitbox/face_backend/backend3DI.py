@@ -258,7 +258,6 @@ class FaceProcessor3DI:
                       output_file_idx=[-2, -1])
      
         # STEP 2: shape and texture model
-        print("running script")
         self._execute('scripts/save_identity_and_shape.py',
                       [self.file_shape_coeff, self.file_texture_coeff, '1', '0.4', self.file_shape, self.file_texture, self.model_morphable],
                       "shape and texture model",
