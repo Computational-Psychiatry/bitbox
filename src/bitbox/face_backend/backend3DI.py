@@ -33,7 +33,7 @@ class FaceProcessor3DI:
             warnings.warn("Using 3DI package inside a Docker container.")
             self.use_docker = True
             self.execDIR = '/app/build'
-            self.docker = os.environ.get('PATH_3DI')
+            self.docker = os.environ.get('DOCKER_3DI')
         else:
             if os.environ.get('PATH_3DI'):
                 execDIRs = [os.environ.get('PATH_3DI')]
@@ -72,7 +72,7 @@ class FaceProcessor3DI:
             # executable
             if self.use_docker: # check if we are using a docker container
                 input_dir = os.path.dirname(self.file_input)
-                cmd = f"docker run --rm -v {input_dir}:{input_dir} -v {self.dir_output}:{self.dir_output} -w /app/build {self.docker} {executable}"
+                cmd = f"docker run --rm --gpus all -v {input_dir}:{input_dir} -v {self.dir_output}:{self.dir_output} -w /app/build {self.docker} ./{executable}"
             else:
                 cmd = os.path.join(self.execDIR, executable)
             
@@ -85,7 +85,7 @@ class FaceProcessor3DI:
             if os.name == 'nt': # Windows
                 cmd += ' > NUL'
             else: # Unix-like systems (Linux, macOS)
-                cmd += ' > /dev/null'            
+                cmd += ' > /dev/null'          
             os.system(cmd)
         else: # if we are using a python function
             cmd = "%s()" % executable
