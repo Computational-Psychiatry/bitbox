@@ -24,12 +24,12 @@ We have a pre-compiled Docker image for 3DI, but with a specific CUDA driver (i.
 
 1. Download the [Dockerfile](https://github.com/Computational-Psychiatry/3DI/raw/main/docker/3DI/Dockerfile)
 2. Download the [3DMM model](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)
-3. Place the Dockerfile and the face model (01_MorphableModel.mat) in the same directory
+3. Place the Dockerfile and the face model (`01_MorphableModel.mat`) in the same directory
 4. Within this directory, run the following command to copy the face model
     ```bash
     docker build -t 3di:basel2009-20241217 . 
     ```
-    The first parameter "3di:basel2009-20241217" is the name of the name image to be created. You can replace it if you wish. Please don;t forget the "." at the end. 
+    The first parameter `3di:basel2009-20241217` is the name of the name image to be created. You can replace it if you wish. Please don't forget the `.` at the end. 
 5. That's it! You will also need to set an environment variable `DOCKER_3DI`, which will be explained below.
 
 #### Using Docker: Option 2 
@@ -55,7 +55,7 @@ If your system (GPUs) cannot work with CUDA 12.0.0, and if you still want to use
     ```bash
     docker build -t 3di:basel2009-20241217 . 
     ```
-    The first parameter "3di:basel2009-20241217" is the name of the name image to be created. You can replace it if you wish. Please don;t forget the "." at the end.
+    The first parameter `3di:basel2009-20241217` is the name of the name image to be created. You can replace it if you wish. Please don;t forget the `.` at the end.
 6. If you feel you will enjoy helping us and others, you may also share your tested and verified Dockerfile with us so that we can serve this modified image with others as well.
 7. That's it! You will also need to set an environment variable `DOCKER_3DI`, which will be explained below.
 
