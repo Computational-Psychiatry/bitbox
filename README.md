@@ -20,11 +20,44 @@ The recommended way to install backends is to use our Docker images. Using Docke
 
 #### Using Docker: Option 1 
 
-... (COMING SOON)
+We have a pre-compiled Docker image for 3DI, but with a specific CUDA driver (i.e., 12.0.0). If your GPU can work with this version of CUDA, please use this option. Otherwise, you need to use the second option below.
+
+1. Download the [Dockerfile](https://github.com/Computational-Psychiatry/3DI/raw/main/docker/3DI/Dockerfile)
+2. Download the [3DMM model](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)
+3. Place the Dockerfile and the face model (01_MorphableModel.mat) in the same directory
+4. Within this directory, run the following command to copy the face model
+    ```bash
+    docker build -t 3di:basel2009-20241217 . 
+    ```
+    The first parameter "3di:basel2009-20241217" is the name of the name image to be created. You can replace it if you wish. Please don;t forget the "." at the end. 
+5. That's it! You will also need to set an environment variable `DOCKER_3DI`, which will be explained below.
 
 #### Using Docker: Option 2 
 
-... (COMING SOON)
+If your system (GPUs) cannot work with CUDA 12.0.0, and if you still want to use Docker, you will need to download our base Dockerfile, modify it for your needs, and compile it. This option, however, will require running every steps that are necessary for installing 3DI from source. Thus, unless you have an actual reason to use Docker (e.g., you cannot install CUDA or any other packages on your system, you don't have admin rights, etc.), we recommend installing 3DI from source natively on your system, as this may yield a slightly faster 3DI. 
+
+1. Download the [Dockerfile](https://github.com/Computational-Psychiatry/3DI/raw/main/docker/3DI_base/Dockerfile)
+2. Download the [3DMM model](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)
+3. Place the Dockerfile and the face model (01_MorphableModel.mat) in the same directory
+4. Modify the Dockerfile to fit it to your system. Specifically,
+    a. Change the following line to start from a specific CUDA image
+    ```bash
+    FROM compsydocker/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base
+    ```
+    You will need to change the image tag `compsydocker/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base`. You can find an available tags from [NVIDIA's CUDA images](https://hub.docker.com/r/nvidia/cuda/tags). Example: `nvidia/cuda:12.6.3-cudnn-devel-ubuntu20.04`
+    b. Change the following lines to compile a specific openCV version that works with your CUDA version
+    ```bash
+    RUN git clone --branch 4.7.0 --depth 1 https://github.com/opencv/opencv.git && \
+        git clone --branch 4.7.0 --depth 1 https://github.com/opencv/opencv_contrib.git && \
+    ```
+    Unfortunately, you have to "discover" the exact version yourself. You may need to change the `cmake` parameters below these lines as well.
+5. Once you finished modifying the Dockerfile and verify it is working (you may need to run docker interactively for this purpose), run the following command within the same directory
+    ```bash
+    docker build -t 3di:basel2009-20241217 . 
+    ```
+    The first parameter "3di:basel2009-20241217" is the name of the name image to be created. You can replace it if you wish. Please don;t forget the "." at the end.
+6. If you feel you will enjoy helping us and others, you may also share your tested and verified Dockerfile with us so that we can serve this modified image with others as well.
+7. That's it! You will also need to set an environment variable `DOCKER_3DI`, which will be explained below.
 
 ### Installing Bitbox
 To install Bitbox, follow these steps. **You will need to use python 3.8 or higher**. 
