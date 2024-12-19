@@ -6,11 +6,11 @@ Please refer to our [Wiki](https://github.com/Computational-Psychiatry/bitbox/wi
 
 ## Installation
 
-Bitbox itself has minimum requirements, but it relies on face/body backends to generate expression/movement signals. These backends usually have more requirements. We highly recommend using our Docker images to install these backends as installing them from source code may prove difficult for some. 
+Bitbox itself has minimum requirements, but it relies on face/body backends to generate expression/movement signals. These backends usually have more requirements. We highly recommend using our Docker images to install these backends as installing them from source code may prove difficult for some. Unfortunately, for currently supported backends, you need NVIDIA GPUs. New backends with CPU support are coming soon. 
 
 ### Installing Face Backends 
 
-The current version of Bitbox supports two face backends, namely 3DI and 3DI-lite, for systems with and without GPU supports, respectively. While 3DI-lite is easier to install, faster, and in some cases, more robust to occlusions, etc., we recommend using 3DI as it is a more generic algorithm, and it may have higher reliability and validity with most videos/images. Nevertheless, if you cannot use NVIDIA GPUs, for example, if you are working on a Mac or a system with AMD GPUs, you need to use 3DI-lite.
+The current version of Bitbox supports two face backends, namely 3DI and 3DI-lite. While 3DI provides more detailed outputs (e.g., full 3D model of the face), 3DI-lite is much faster and more robust to occlusions, etc. If your images don't have significant occlusions and you don't need a faster solution, we recommend using 3DI.
 
 If you can install C++/CUDA codes from the source code, please go ahead and install 3DI from [https://github.com/Computational-Psychiatry/3DI](https://github.com/Computational-Psychiatry/3DI). The instructions are provided there. This approach will install the 3DI as a native application on your system and will be more convenient for using Bitbox.
 
