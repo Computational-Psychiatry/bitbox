@@ -18,7 +18,7 @@ Similarly, 3DI-lite can be installed from ... (COMING SOON)
 
 The recommended way to install backends is to use our Docker images. Using Docker is usually very straightforward; however, 3DI requires downloading an external face model (you need to register individually and request access) and updating our image with this model. Thus, there are a few extra steps you need to do. We provide two options for this.
 
-#### Using Docker: Option 1 
+#### Using Docker: Option 1 (Recommended)
 
 We have a pre-compiled Docker image for 3DI, but with a specific CUDA driver (i.e., 12.0.0). If your GPU can work with this version of CUDA, please use this option. Otherwise, you need to use the second option below.
 
@@ -32,7 +32,7 @@ We have a pre-compiled Docker image for 3DI, but with a specific CUDA driver (i.
     The first parameter `3di:basel2009-20241217` is the name of the name image to be created. You can replace it if you wish. Please don't forget the `.` at the end. 
 5. That's it! You will also need to set an environment variable `DOCKER_3DI`, which will be explained below.
 
-#### Using Docker: Option 2 
+#### Using Docker: Option 2 (Only for advanced Docker users)
 
 If your system (GPUs) cannot work with CUDA 12.0.0, and if you still want to use Docker, you will need to download our base Dockerfile, modify it for your needs, and compile it. This option, however, will require running every steps that are necessary for installing 3DI from source. Thus, unless you have an actual reason to use Docker (e.g., you cannot install CUDA or any other packages on your system, you don't have admin rights, etc.), we recommend installing 3DI from source natively on your system, as this may yield a slightly faster 3DI. 
 
