@@ -1,5 +1,5 @@
 # Base image with CUDA 12.0 support
-FROM compsydocker/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base
+FROM compsygroup/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base
 
 # Set environment variables for non-interactive installs
 ENV DEBIAN_FRONTEND=noninteractive

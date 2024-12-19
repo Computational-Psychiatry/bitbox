@@ -35,6 +35,6 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Computational-Psychiatry/bitbox"
-Documentation = "https://github.com/Computational-Psychiatry/bitbox/wiki"
-Issues = "https://github.com/Computational-Psychiatry/bitbox/issues"
+Homepage = "https://github.com/compsygroup/bitbox"
+Documentation = "https://github.com/compsygroup/bitbox/wiki"
+Issues = "https://github.com/compsygroup/bitbox/issues"
