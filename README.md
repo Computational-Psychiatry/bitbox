@@ -40,9 +40,9 @@ If your system (GPUs) cannot work with CUDA 12.0.0, and if you still want to use
 2. Download the [3DMM model](https://faces.dmi.unibas.ch/bfm/index.php?nav=1-2&id=downloads)
 3. Place the Dockerfile and the face model (01_MorphableModel.mat) in the same directory
 4. Modify the Dockerfile to fit it to your system. Specifically,
-    1. Change the following line to start from a specific CUDA image. You will need to change the image tag `compsydocker/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base`. You can find an available tag from [NVIDIA's CUDA images](https://hub.docker.com/r/nvidia/cuda/tags). Example: `nvidia/cuda:12.6.3-cudnn-devel-ubuntu20.04`
+    1. Change the following line to start from a specific CUDA image. You will need to change the image tag `compsygroup/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base`. You can find an available tag from [NVIDIA's CUDA images](https://hub.docker.com/r/nvidia/cuda/tags). Example: `nvidia/cuda:12.6.3-cudnn-devel-ubuntu20.04`
     ```bash
-    FROM compsydocker/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base
+    FROM compsygroup/3di:cuda12.0.0-cudnn8-devel-ubuntu22.04-base
     ```
     2. Change the following lines to compile a specific openCV version that works with your CUDA version. Unfortunately, you have to "discover" the exact version yourself. You may need to change the `cmake` parameters below these lines as well.
     ```bash
