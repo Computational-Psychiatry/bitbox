@@ -11,7 +11,7 @@ setup(
     author_email = 'tuncb@chop.edu',
     long_description = long_description,
     long_description_content_type = 'text/markdown',
-    url = 'https://github.com/Computational-Psychiatry/bitbox',
+    url = 'https://github.com/compsygroup/bitbox',
     classifiers = [
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
