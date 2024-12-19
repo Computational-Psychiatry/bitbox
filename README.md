@@ -88,7 +88,7 @@ To install Bitbox, follow these steps. **You will need to use python 3.8 or high
     python setup.py install
     ```
 
-6. Set the environment variable `PATH_3DI` to indicate the directory in which 3DI was installed:
+6. If you are not using Docker, set the environment variable `PATH_3DI` to indicate the directory in which 3DI was installed. We recommend setting it in .bahsrc (on Lunux/Mac) or in System's Environment Variables (on Windows).
 
     - **Linux**:
       ```bash
@@ -103,6 +103,23 @@ To install Bitbox, follow these steps. **You will need to use python 3.8 or high
     - **Mac**:
       ```bash
       export PATH_3DI=/path/to/3DI/directory
+      ```
+
+7. If you are using Docker, set the environment variable `DOCKER_3DI` to indicate the 3DI image name/tag. Change the image name/tag if needed. We recommend setting it in .bahsrc (on Lunux/Mac) or in System's Environment Variables (on Windows).
+
+    - **Linux**:
+      ```bash
+      export DOCKER_3DI=3di:basel2009-20241217
+      ```
+
+    - **Windows** (Command Prompt):
+      ```bash
+      set DOCKER_3DI=3di:basel2009-20241217
+      ```
+
+    - **Mac**:
+      ```bash
+      export DOCKER_3DI=3di:basel2009-20241217
       ```
 
 Now you are ready to use Bitbox!
